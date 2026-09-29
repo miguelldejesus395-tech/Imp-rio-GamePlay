@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Império GamePlay</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+    }
+    .login-box {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 16px; padding: 40px 30px; width: 100%; max-width: 400px;
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.15);
+    }
+    h1 { text-align: center; margin-bottom: 8px; font-size: 28px; }
+    .subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; }
+    input {
+      width: 100%; padding: 14px; margin: 8px 0; border-radius: 8px;
+      border: 1px solid #334155; background: #1e293b; color: white; font-size: 16px;
+    }
+    button {
+      width: 100%; padding: 14px; margin-top: 10px; border-radius: 8px;
+      border: none; background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+      color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;
+    }
+    button:hover { transform: scale(1.02); }
+    .error { color: #f87171; margin-top: 12px; display: none; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h1>👑 Império GamePlay</h1>
+    <p class="subtitle">Jogos na Nuvem — Sua diversão, onde estiver</p>
+    <input type="text" id="usuario" placeholder="Usuário">
+    <input type="password" id="senha" placeholder="Senha">
+    <button onclick="entrar()">Entrar</button>
+    <p class="error" id="erro">Usuário ou senha incorretos</p>
+  </div>
+  <script>
+    function entrar() {
+      const user = document.getElementById('usuario').value;
+      const pass = document.getElementById('senha').value;
+      fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user, pass })
+      }).then(r => r.json()).then(d => {
+        if (d.ok) {
+          localStorage.setItem('igc_token', d.token);
+          localStorage.setItem('igc_role', d.role);
+          window.location.href = d.role === 'admin' ? 'admin.html' : 'usuario.html';
+        } else {
+          document.getElementById('erro').style.display = 'block';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
 
