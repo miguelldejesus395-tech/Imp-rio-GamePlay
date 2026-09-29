@@ -1,1 +1,11 @@
+{
+  "name": "imperio-gameplay",
+  "version": "1.0.0",
+  "description": "Império GamePlay - Jogos na Nuvem",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}
 
