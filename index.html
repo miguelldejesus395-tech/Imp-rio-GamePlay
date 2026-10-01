@@ -3,488 +3,920 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Império GamePlay</title>
+
+  <title>👑 Império GamePlay</title>
 
   <style>
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
+    }
+
+    :root {
+      --bg: #050712;
+      --card: rgba(14, 18, 36, .88);
+      --card2: rgba(20, 25, 48, .92);
+      --blue: #247cff;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+      --cyan: #22d3ee;
+      --green: #22c55e;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: rgba(139, 92, 246, .25);
     }
 
     body {
       min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
       background:
-        radial-gradient(circle at top, rgba(37,99,235,.25), transparent 35%),
-        linear-gradient(135deg, #07111f, #111b32, #080d18);
+        radial-gradient(circle at 10% 10%, rgba(36,124,255,.20), transparent 30%),
+        radial-gradient(circle at 90% 20%, rgba(139,92,246,.18), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(236,72,153,.12), transparent 35%),
+        var(--bg);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: linear-gradient(to bottom, black, transparent);
+    }
+
+    .page {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .page.active {
       display: flex;
+    }
+
+    .auth-page {
       align-items: center;
       justify-content: center;
-      color: white;
-      padding: 20px;
+      padding: 25px;
+      position: relative;
     }
 
-    .login-box {
-      width: 100%;
-      max-width: 430px;
-      background: rgba(15, 23, 42, .94);
-      border: 1px solid rgba(59,130,246,.45);
-      border-radius: 22px;
-      padding: 35px 30px;
+    .auth-layout {
+      width: min(1100px, 100%);
+      min-height: 650px;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      overflow: hidden;
+      background: rgba(5, 7, 18, .82);
       box-shadow:
-        0 0 50px rgba(37,99,235,.18),
-        inset 0 0 30px rgba(59,130,246,.03);
+        0 30px 100px rgba(0,0,0,.65),
+        0 0 60px rgba(88,28,135,.15);
+      backdrop-filter: blur(20px);
     }
 
-    h1 {
-      text-align: center;
+    .hero {
+      position: relative;
+      padding: 65px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(36,124,255,.28), transparent 35%),
+        radial-gradient(circle at 80% 80%, rgba(236,72,153,.18), transparent 35%),
+        linear-gradient(145deg, rgba(20,28,60,.9), rgba(7,10,24,.96));
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      right: -100px;
+      top: -100px;
+      border-radius: 50%;
+      background: rgba(139,92,246,.12);
+      filter: blur(20px);
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -.5px;
+      margin-bottom: 35px;
+    }
+
+    .logo span {
+      background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero h1 {
+      font-size: clamp(42px, 5vw, 70px);
+      line-height: .98;
+      margin-bottom: 25px;
+      max-width: 650px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+      max-width: 560px;
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .feature {
+      padding: 11px 15px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 13px;
+      background: rgba(255,255,255,.035);
+      color: #dbeafe;
+      font-size: 13px;
+    }
+
+    .auth-box {
+      padding: 50px 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: rgba(10,13,28,.88);
+    }
+
+    .auth-box h2 {
+      font-size: 32px;
       margin-bottom: 8px;
-      font-size: 30px;
     }
 
-    .subtitle {
-      text-align: center;
-      color: #94a3b8;
+    .auth-subtitle {
+      color: var(--muted);
       margin-bottom: 28px;
-      line-height: 1.4;
+      line-height: 1.5;
     }
 
-    .form-title {
-      font-size: 22px;
-      font-weight: bold;
-      margin-bottom: 15px;
+    .form-group {
+      margin-bottom: 17px;
     }
 
-    .campo {
-      margin-bottom: 12px;
-    }
-
-    .campo label {
+    .form-group label {
       display: block;
+      margin-bottom: 8px;
       color: #cbd5e1;
       font-size: 13px;
-      margin-bottom: 6px;
+      font-weight: 700;
     }
 
-    input {
+    .input {
       width: 100%;
-      padding: 15px;
-      border-radius: 10px;
-      border: 1px solid #334155;
-      background: #1e293b;
-      color: white;
-      font-size: 16px;
+      border: 1px solid rgba(148,163,184,.16);
       outline: none;
-    }
-
-    input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 12px rgba(59,130,246,.18);
-    }
-
-    button {
-      width: 100%;
-      padding: 15px;
-      margin-top: 10px;
-      border-radius: 10px;
-      border: none;
+      border-radius: 13px;
+      padding: 15px 16px;
       color: white;
-      font-size: 16px;
-      font-weight: bold;
+      background: rgba(255,255,255,.045);
+      transition: .2s;
+      font-size: 15px;
+    }
+
+    .input:focus {
+      border-color: rgba(96,165,250,.8);
+      box-shadow: 0 0 0 4px rgba(36,124,255,.10);
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
       cursor: pointer;
+      border-radius: 13px;
+      padding: 15px 18px;
+      color: white;
+      font-size: 15px;
+      font-weight: 800;
       transition: .2s;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.08);
+    .btn-primary {
+      background: linear-gradient(100deg, #2563eb, #7c3aed, #db2777);
+      box-shadow: 0 12px 35px rgba(124,58,237,.28);
     }
 
-    .btn-principal {
-      background: linear-gradient(90deg, #3b82f6, #2563eb);
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(124,58,237,.4);
     }
 
-    .btn-cadastro {
-      background: linear-gradient(90deg, #7c3aed, #db2777);
+    .btn-secondary {
+      margin-top: 12px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.09);
     }
 
-    .btn-voltar {
-      background: #263449;
+    .btn-secondary:hover {
+      background: rgba(255,255,255,.09);
     }
 
-    .troca {
-      text-align: center;
-      margin-top: 20px;
-      color: #94a3b8;
-      font-size: 14px;
+    .auth-links {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 18px;
+      font-size: 13px;
     }
 
-    .troca button {
-      background: transparent;
+    .auth-links button {
+      border: 0;
+      background: none;
       color: #60a5fa;
-      padding: 5px;
-      margin-top: 5px;
-      width: auto;
+      cursor: pointer;
+      font-size: 13px;
     }
 
-    .erro,
-    .sucesso {
-      display: none;
+    .auth-links button:hover {
+      text-decoration: underline;
+    }
+
+    .message {
+      min-height: 20px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .message.success {
+      color: #4ade80;
+    }
+
+    .message.error {
+      color: #fb7185;
+    }
+
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .remember input {
+      accent-color: #7c3aed;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .admin-access {
+      margin-top: 30px;
       text-align: center;
-      margin-top: 14px;
-      padding: 11px;
-      border-radius: 8px;
-      font-size: 14px;
     }
 
-    .erro {
-      color: #fecaca;
-      background: rgba(220,38,38,.12);
-      border: 1px solid rgba(239,68,68,.25);
-    }
-
-    .sucesso {
-      color: #bbf7d0;
-      background: rgba(22,163,74,.12);
-      border: 1px solid rgba(34,197,94,.25);
-    }
-
-    .escondido {
-      display: none;
-    }
-
-    .marca {
-      text-align: center;
-      color: #64748b;
+    .admin-access button {
+      border: 1px solid rgba(139,92,246,.25);
+      background: rgba(139,92,246,.08);
+      color: #c4b5fd;
+      padding: 9px 14px;
+      border-radius: 10px;
+      cursor: pointer;
       font-size: 12px;
-      margin-top: 25px;
+    }
+
+    @media (max-width: 850px) {
+      .auth-layout {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .hero {
+        padding: 42px 30px;
+      }
+
+      .hero h1 {
+        font-size: 43px;
+      }
+
+      .auth-box {
+        padding: 35px 25px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .auth-page {
+        padding: 12px;
+      }
+
+      .auth-layout {
+        border-radius: 22px;
+      }
+
+      .hero {
+        padding: 32px 22px;
+      }
+
+      .hero p {
+        font-size: 15px;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .auth-box {
+        padding: 30px 20px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="login-box">
+  <!-- LOGIN -->
+  <section id="login" class="page active auth-page">
 
-    <!-- LOGIN -->
-    <div id="loginArea">
+    <div class="auth-layout">
 
-      <h1>👑 Império GamePlay</h1>
+      <div class="hero">
 
-      <p class="subtitle">
-        Jogos na Nuvem — Sua diversão, onde estiver
-      </p>
+        <div class="logo">
+          👑 <span>IMPÉRIO GAMEPLAY</span>
+        </div>
 
-      <div class="form-title">Entrar na sua conta</div>
+        <h1>
+          Seu jogo.
+          <span>Na nuvem.</span>
+        </h1>
 
-      <div class="campo">
-        <label>Usuário</label>
-        <input
-          type="text"
-          id="usuarioLogin"
-          placeholder="Digite seu usuário"
-          autocomplete="username"
-        >
+        <p>
+          Entre no Império GamePlay e tenha acesso ao seu painel,
+          minutos de jogo, servidores FiveM e sua experiência
+          de cloud gaming.
+        </p>
+
+        <div class="features">
+          <div class="feature">☁️ Cloud Gaming</div>
+          <div class="feature">🎮 FiveM</div>
+          <div class="feature">⚡ Alta Performance</div>
+          <div class="feature">🔐 Área Segura</div>
+        </div>
+
       </div>
 
-      <div class="campo">
-        <label>Senha</label>
-        <input
-          type="password"
-          id="senhaLogin"
-          placeholder="Digite sua senha"
-          autocomplete="current-password"
-        >
+      <div class="auth-box">
+
+        <h2>Entrar</h2>
+
+        <p class="auth-subtitle">
+          Acesse sua conta do Império GamePlay.
+        </p>
+
+        <div id="message" class="message"></div>
+
+        <form id="loginForm">
+
+          <div class="form-group">
+            <label for="username">
+              Usuário ou e-mail
+            </label>
+
+            <input
+              class="input"
+              id="username"
+              name="username"
+              type="text"
+              autocomplete="username"
+              placeholder="Digite seu usuário ou e-mail"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="password">
+              Senha
+            </label>
+
+            <input
+              class="input"
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Digite sua senha"
+              required
+            >
+          </div>
+
+          <label class="remember">
+            <input
+              id="remember"
+              type="checkbox"
+              checked
+            >
+            Lembrar minha sessão
+          </label>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            🚀 Entrar no GameCloud
+          </button>
+
+        </form>
+
+        <div class="auth-links">
+
+          <button
+            type="button"
+            onclick="show('register')"
+          >
+            Criar conta
+          </button>
+
+          <button
+            type="button"
+            onclick="show('forgot')"
+          >
+            Esqueci minha senha
+          </button>
+
+        </div>
+
+        <div class="admin-access">
+          <button
+            type="button"
+            onclick="show('adminLogin')"
+          >
+            ⚙️ Acesso administrativo
+          </button>
+        </div>
+
       </div>
 
-      <button class="btn-principal" onclick="entrar()">
-        Entrar
-      </button>
+    </div>
 
-      <div id="erroLogin" class="erro"></div>
+  </section>
 
-      <div class="troca">
-        Ainda não possui uma conta?
-        <br>
-        <button onclick="mostrarCadastro()">
-          Criar minha conta
+
+  <!-- CADASTRO -->
+  <section id="register" class="page auth-page">
+
+    <div class="auth-layout">
+
+      <div class="hero">
+
+        <div class="logo">
+          👑 <span>IMPÉRIO GAMEPLAY</span>
+        </div>
+
+        <h1>
+          Crie sua
+          <span>conta.</span>
+        </h1>
+
+        <p>
+          Cadastre-se para acessar a plataforma,
+          comprar minutos e utilizar os serviços
+          de cloud gaming.
+        </p>
+
+        <div class="features">
+          <div class="feature">🎮 FiveM</div>
+          <div class="feature">☁️ Cloud Gaming</div>
+          <div class="feature">💳 Pagamentos</div>
+          <div class="feature">⚡ Instantâneo</div>
+        </div>
+
+      </div>
+
+      <div class="auth-box">
+
+        <h2>Criar conta</h2>
+
+        <p class="auth-subtitle">
+          Preencha seus dados para começar.
+        </p>
+
+        <div id="messageRegister" class="message"></div>
+
+        <form id="registerForm">
+
+          <div class="form-group">
+            <label for="registerUsername">
+              Usuário
+            </label>
+
+            <input
+              class="input"
+              id="registerUsername"
+              name="username"
+              type="text"
+              autocomplete="username"
+              placeholder="Escolha seu usuário"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="registerEmail">
+              E-mail
+            </label>
+
+            <input
+              class="input"
+              id="registerEmail"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="seuemail@email.com"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="registerPassword">
+              Senha
+            </label>
+
+            <input
+              class="input"
+              id="registerPassword"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Mínimo de 6 caracteres"
+              minlength="6"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">
+              Confirmar senha
+            </label>
+
+            <input
+              class="input"
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Digite a senha novamente"
+              minlength="6"
+              required
+            >
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            👑 Criar minha conta
+          </button>
+
+        </form>
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="show('login')"
+        >
+          ← Voltar para login
         </button>
+
       </div>
 
     </div>
 
+  </section>
 
-    <!-- CADASTRO -->
-    <div id="cadastroArea" class="escondido">
 
-      <h1>👑 Império GamePlay</h1>
+  <!-- RECUPERAÇÃO -->
+  <section id="forgot" class="page auth-page">
 
-      <p class="subtitle">
-        Crie sua conta e comece a jogar na nuvem.
-      </p>
+    <div class="auth-layout">
 
-      <div class="form-title">Criar conta</div>
+      <div class="hero">
 
-      <div class="campo">
-        <label>Usuário</label>
-        <input
-          type="text"
-          id="usuarioCadastro"
-          placeholder="Escolha seu usuário"
-          autocomplete="username"
-        >
+        <div class="logo">
+          👑 <span>IMPÉRIO GAMEPLAY</span>
+        </div>
+
+        <h1>
+          Recuperação
+          <span>de conta.</span>
+        </h1>
+
+        <p>
+          Informe o e-mail cadastrado para iniciar
+          o processo de recuperação da sua conta.
+        </p>
+
       </div>
 
-      <div class="campo">
-        <label>E-mail</label>
-        <input
-          type="email"
-          id="emailCadastro"
-          placeholder="seuemail@gmail.com"
-          autocomplete="email"
+      <div class="auth-box">
+
+        <h2>Esqueci minha senha</h2>
+
+        <p class="auth-subtitle">
+          Digite o e-mail associado à sua conta.
+        </p>
+
+        <div id="messageForgot" class="message"></div>
+
+        <form
+          id="forgotForm"
+          onsubmit="return false;"
         >
-      </div>
 
-      <div class="campo">
-        <label>Senha</label>
-        <input
-          type="password"
-          id="senhaCadastro"
-          placeholder="Crie uma senha"
-          autocomplete="new-password"
+          <div class="form-group">
+            <label for="forgotEmail">
+              E-mail
+            </label>
+
+            <input
+              class="input"
+              id="forgotEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="seuemail@email.com"
+              required
+            >
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="solicitarRecuperacao()"
+          >
+            📧 Solicitar recuperação
+          </button>
+
+        </form>
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="show('login')"
         >
-      </div>
-
-      <div class="campo">
-        <label>Confirmar senha</label>
-        <input
-          type="password"
-          id="confirmarSenhaCadastro"
-          placeholder="Digite a senha novamente"
-          autocomplete="new-password"
-        >
-      </div>
-
-      <button class="btn-cadastro" onclick="cadastrar()">
-        Criar conta
-      </button>
-
-      <div id="erroCadastro" class="erro"></div>
-
-      <div id="sucessoCadastro" class="sucesso"></div>
-
-      <div class="troca">
-        Já possui uma conta?
-        <br>
-        <button onclick="mostrarLogin()">
-          Voltar para entrar
+          ← Voltar para login
         </button>
+
       </div>
 
     </div>
 
-    <div class="marca">
-      Império GamePlay © 2026
+  </section>
+
+
+  <!-- LOGIN ADMIN -->
+  <section id="adminLogin" class="page auth-page">
+
+    <div class="auth-layout">
+
+      <div class="hero">
+
+        <div class="logo">
+          👑 <span>IMPÉRIO GAMEPLAY</span>
+        </div>
+
+        <h1>
+          Painel
+          <span>Admin.</span>
+        </h1>
+
+        <p>
+          Área administrativa para gerenciamento
+          da plataforma, usuários, pacotes,
+          pagamentos e servidores.
+        </p>
+
+        <div class="features">
+          <div class="feature">👥 Usuários</div>
+          <div class="feature">💰 Vendas</div>
+          <div class="feature">🎟️ Minutos</div>
+          <div class="feature">⚙️ Configurações</div>
+        </div>
+
+      </div>
+
+      <div class="auth-box">
+
+        <h2>Administrador</h2>
+
+        <p class="auth-subtitle">
+          Entre usando as credenciais administrativas
+          configuradas no servidor.
+        </p>
+
+        <div id="messageAdmin" class="message"></div>
+
+        <form id="adminLoginForm">
+
+          <div class="form-group">
+            <label for="adminUser">
+              Usuário administrativo
+            </label>
+
+            <input
+              class="input"
+              id="adminUser"
+              type="text"
+              autocomplete="username"
+              placeholder="Usuário"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="adminPassword">
+              Senha administrativa
+            </label>
+
+            <input
+              class="input"
+              id="adminPassword"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Senha"
+              required
+            >
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            ⚙️ Entrar no painel
+          </button>
+
+        </form>
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="show('login')"
+        >
+          ← Voltar
+        </button>
+
+      </div>
+
     </div>
 
-  </div>
+  </section>
 
 
-<script>
+  <script src="app.js"></script>
 
-  function mostrarCadastro() {
-    document.getElementById('loginArea').classList.add('escondido');
-    document.getElementById('cadastroArea').classList.remove('escondido');
-
-    limparMensagens();
-  }
-
-
-  function mostrarLogin() {
-    document.getElementById('cadastroArea').classList.add('escondido');
-    document.getElementById('loginArea').classList.remove('escondido');
-
-    limparMensagens();
-  }
-
-
-  function limparMensagens() {
-    document.getElementById('erroLogin').style.display = 'none';
-    document.getElementById('erroCadastro').style.display = 'none';
-    document.getElementById('sucessoCadastro').style.display = 'none';
-  }
-
-
-  async function entrar() {
-
-    const user =
-      document.getElementById('usuarioLogin').value.trim();
-
-    const pass =
-      document.getElementById('senhaLogin').value;
-
-    const erro =
-      document.getElementById('erroLogin');
-
-    erro.style.display = 'none';
-
-    if (!user || !pass) {
-      erro.textContent = 'Digite usuário e senha.';
-      erro.style.display = 'block';
-      return;
-    }
-
-    try {
-
-      const resposta = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user: user,
-          pass: pass
-        })
+  <script>
+    function show(page) {
+      document.querySelectorAll('.page').forEach(section => {
+        section.classList.toggle(
+          'active',
+          section.id === page
+        );
       });
 
-      const dados = await resposta.json();
+      const message =
+        document.getElementById('message');
 
-      if (!dados.ok) {
-        erro.textContent =
-          dados.error || 'Usuário ou senha incorretos.';
-        erro.style.display = 'block';
+      if (message) {
+        message.textContent = '';
+        message.className = 'message';
+      }
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    async function solicitarRecuperacao() {
+      const email =
+        document.getElementById('forgotEmail').value.trim();
+
+      const message =
+        document.getElementById('messageForgot');
+
+      if (!email) {
+        message.textContent = 'Informe seu e-mail.';
+        message.className = 'message error';
         return;
       }
 
-      localStorage.setItem('igc_token', dados.token);
-      localStorage.setItem('igc_role', dados.role);
+      try {
+        if (typeof api !== 'function') {
+          throw new Error('Sistema de comunicação indisponível.');
+        }
 
-      if (dados.role === 'admin') {
-        window.location.href = 'admin.html';
-      } else {
-        window.location.href = 'usuario.html';
+        const data = await api('/password/forgot', {
+          method: 'POST',
+          body: JSON.stringify({ email })
+        });
+
+        message.textContent =
+          data.message ||
+          'Se o e-mail estiver cadastrado, as instruções serão enviadas.';
+
+        message.className = 'message success';
+
+      } catch (error) {
+        message.textContent =
+          error.message ||
+          'Não foi possível solicitar a recuperação.';
+
+        message.className = 'message error';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const adminForm =
+        document.getElementById('adminLoginForm');
+
+      if (adminForm) {
+        adminForm.addEventListener('submit', async event => {
+          event.preventDefault();
+
+          const user =
+            document.getElementById('adminUser').value.trim();
+
+          const pass =
+            document.getElementById('adminPassword').value;
+
+          const message =
+            document.getElementById('messageAdmin');
+
+          if (!user || !pass) {
+            message.textContent =
+              'Preencha usuário e senha.';
+
+            message.className =
+              'message error';
+
+            return;
+          }
+
+          try {
+            const data = await api('/login', {
+              method: 'POST',
+              body: JSON.stringify({
+                user,
+                pass
+              })
+            });
+
+            if (!data.token) {
+              throw new Error(
+                'O servidor não retornou uma sessão válida.'
+              );
+            }
+
+            salvarSessao(
+              data.token,
+              data.role || 'admin',
+              true
+            );
+
+            window.location.href = 'admin.html';
+
+          } catch (error) {
+            message.textContent =
+              error.message ||
+              'Credenciais administrativas inválidas.';
+
+            message.className =
+              'message error';
+          }
+        });
       }
 
-    } catch (e) {
-
-      erro.textContent =
-        'Não foi possível conectar ao servidor.';
-
-      erro.style.display = 'block';
-    }
-  }
-
-
-  async function cadastrar() {
-
-    const username =
-      document.getElementById('usuarioCadastro').value.trim();
-
-    const email =
-      document.getElementById('emailCadastro').value.trim();
-
-    const password =
-      document.getElementById('senhaCadastro').value;
-
-    const confirmar =
-      document.getElementById('confirmarSenhaCadastro').value;
-
-    const erro =
-      document.getElementById('erroCadastro');
-
-    const sucesso =
-      document.getElementById('sucessoCadastro');
-
-    erro.style.display = 'none';
-    sucesso.style.display = 'none';
-
-    if (!username || !email || !password || !confirmar) {
-      erro.textContent =
-        'Preencha todos os campos.';
-      erro.style.display = 'block';
-      return;
-    }
-
-    if (password.length < 6) {
-      erro.textContent =
-        'A senha precisa ter pelo menos 6 caracteres.';
-      erro.style.display = 'block';
-      return;
-    }
-
-    if (password !== confirmar) {
-      erro.textContent =
-        'As senhas não são iguais.';
-      erro.style.display = 'block';
-      return;
-    }
-
-    try {
-
-      const resposta = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: username,
-          email: email,
-          password: password
-        })
-      });
-
-      const dados = await resposta.json();
-
-      if (!dados.ok) {
-        erro.textContent =
-          dados.error || 'Não foi possível criar a conta.';
-        erro.style.display = 'block';
-        return;
-      }
-
-      sucesso.textContent =
-        'Conta criada com sucesso! Agora faça login.';
-
-      sucesso.style.display = 'block';
-
-      document.getElementById('usuarioCadastro').value = '';
-      document.getElementById('emailCadastro').value = '';
-      document.getElementById('senhaCadastro').value = '';
-      document.getElementById('confirmarSenhaCadastro').value = '';
-
-      setTimeout(() => {
-        mostrarLogin();
-      }, 1500);
-
-    } catch (e) {
-
-      erro.textContent =
-        'Não foi possível conectar ao servidor.';
-
-      erro.style.display = 'block';
-    }
-  }
-
-
-  document.addEventListener('keydown', function(event) {
-
-    if (event.key !== 'Enter') return;
-
-    if (!document.getElementById('loginArea')
-      .classList.contains('escondido')) {
-
-      entrar();
-
-    } else {
-
-      cadastrar();
-
-    }
-
-  });
-
-</script>
+    });
+  </script>
 
 </body>
 </html>
