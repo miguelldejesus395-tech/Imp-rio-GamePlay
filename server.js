@@ -8,33 +8,25 @@ const { createClient } = require('@supabase/supabase-js');
 
 const PORT = Number(process.env.PORT || 10000);
 
-const ADMIN_USER = String(
-  process.env.ADMIN_USER || 'admin'
-).trim();
-
-const ADMIN_PASSWORD = String(
-  process.env.ADMIN_PASSWORD || ''
-).trim();
-
-const SESSION_TTL =
-  1000 * 60 * 60 * 24 * 7;
-
-const SUPABASE_URL = String(
-  process.env.SUPABASE_URL || ''
-).trim();
-
+const SUPABASE_URL = String(process.env.SUPABASE_URL || '').trim();
 const SUPABASE_SECRET_KEY = String(
   process.env.SUPABASE_SECRET_KEY || ''
 ).trim();
 
-if (
-  !SUPABASE_URL ||
-  !SUPABASE_SECRET_KEY
-) {
-  console.error(
-    'SUPABASE_URL e SUPABASE_SECRET_KEY são obrigatórios.'
-  );
+const ADMIN_USER = String(process.env.ADMIN_USER || 'admin').trim();
+const ADMIN_PASSWORD = String(
+  process.env.ADMIN_PASSWORD || '123456'
+).trim();
 
+const PUBLIC_URL = String(
+  process.env.PUBLIC_URL ||
+  `http://localhost:${PORT}`
+).replace(/\/+$/, '');
+
+const SESSION_TTL = 1000 * 60 * 60 * 24 * 7;
+
+if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
+  console.error('ERRO: SUPABASE_URL e SUPABASE_SECRET_KEY precisam estar configurados.');
   process.exit(1);
 }
 
@@ -44,41 +36,10 @@ const supabase = createClient(
   {
     auth: {
       persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false
+      autoRefreshToken: false
     }
   }
 );
-
-const DATA_FILE = path.join(
-  __dirname,
-  'data',
-  'gameplay.json'
-);
-
-const PACKAGES = [
-  {
-    id: 'basico',
-    name: 'Básico',
-    ram: '4GB',
-    gpu: 'Compartilhada',
-    price: 19.90
-  },
-  {
-    id: 'medio',
-    name: 'Médio',
-    ram: '8GB',
-    gpu: 'Dedicada',
-    price: 34.90
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    ram: '16GB',
-    gpu: 'Dedicada',
-    price: 59.90
-  }
-];
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -89,38 +50,77 @@ const mimeTypes = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.gif': 'image/gif',
-  '.svg': 'image/svg+xml'
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon'
 };
 
-function sendJson(res, status, payload) {
-  res.writeHead(status, {
-    'Content-Type':
-      'application/json; charset=utf-8',
+/* =========================================================
+   UTILIDADES
+========================================================= */
 
+function sendJson(res, status, data) {
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store'
   });
 
-  res.end(JSON.stringify(payload));
+  res.end(JSON.stringify(data));
 }
 
-function readBody(req) {
+function sendText(res, status, text) {
+  res.writeHead(status, {
+    'Content-Type': 'text/plain; charset=utf-8'
+  });
+
+  res.end(text);
+}
+
+function getToken(req) {
+  const header = String(req.headers.authorization || '');
+
+  if (!header.toLowerCase().startsWith('bearer ')) {
+    return '';
+  }
+
+  return header.slice(7).trim();
+}
+
+function parseUrl(req) {
+  return new URL(
+    req.url,
+    `http://${req.headers.host || 'localhost'}`
+  );
+}
+
+function routePath(req) {
+  return parseUrl(req).pathname;
+}
+
+function getRouteId(req, prefix) {
+  const pathname = routePath(req);
+
+  if (!pathname.startsWith(prefix)) {
+    return '';
+  }
+
+  return pathname.slice(prefix.length).replace(/^\/+/, '').split('/')[0];
+}
+
+function readJson(req) {
   return new Promise((resolve, reject) => {
     let body = '';
 
     req.on('data', chunk => {
       body += chunk;
 
-      if (body.length > 1024 * 1024) {
+      if (body.length > 2 * 1024 * 1024) {
+        reject(new Error('Requisição muito grande.'));
         req.destroy();
-
-        reject(
-          new Error('Payload muito grande')
-        );
       }
     });
 
     req.on('end', () => {
-      if (!body) {
+      if (!body.trim()) {
         resolve({});
         return;
       }
@@ -128,9 +128,7 @@ function readBody(req) {
       try {
         resolve(JSON.parse(body));
       } catch {
-        reject(
-          new Error('JSON inválido')
-        );
+        reject(new Error('JSON inválido.'));
       }
     });
 
@@ -138,1097 +136,2368 @@ function readBody(req) {
   });
 }
 
-function normalizeUser(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase();
-}
-
-function normalizeEmail(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase();
-}
-
 function hashPassword(password) {
-  const salt =
-    crypto.randomBytes(16).toString('hex');
+  const salt = crypto.randomBytes(16).toString('hex');
 
-  const hash =
-    crypto
-      .scryptSync(
-        String(password),
-        salt,
-        64
-      )
-      .toString('hex');
+  const hash = crypto.scryptSync(
+    String(password),
+    salt,
+    64
+  ).toString('hex');
 
-  return `scrypt$${salt}$${hash}`;
+  return `scrypt:${salt}:${hash}`;
 }
 
-function verifyPassword(
-  password,
-  stored
-) {
-  if (!stored) {
-    return false;
-  }
+function verifyPassword(password, stored) {
+  const value = String(stored || '');
 
-  /*
-   * Compatibilidade com contas antigas
-   * que ainda estejam usando senha em
-   * texto simples.
-   */
-  if (
-    !String(stored).startsWith(
-      'scrypt$'
-    )
-  ) {
-    return (
-      String(password) ===
-      String(stored)
+  if (!value.startsWith('scrypt:')) {
+    return crypto.timingSafeEqual(
+      Buffer.from(String(password)),
+      Buffer.from(value)
     );
   }
 
-  const parts =
-    String(stored).split('$');
+  const parts = value.split(':');
 
   if (parts.length !== 3) {
     return false;
   }
 
-  const [
-    ,
+  const salt = parts[1];
+  const originalHash = Buffer.from(parts[2], 'hex');
+
+  const testHash = crypto.scryptSync(
+    String(password),
     salt,
-    expectedHex
-  ] = parts;
+    originalHash.length
+  );
 
-  try {
-    const actual =
-      crypto.scryptSync(
-        String(password),
-        salt,
-        64
-      );
-
-    const expected =
-      Buffer.from(
-        expectedHex,
-        'hex'
-      );
-
-    return (
-      expected.length ===
-        actual.length &&
-      crypto.timingSafeEqual(
-        actual,
-        expected
-      )
-    );
-  } catch {
-    return false;
-  }
+  return (
+    testHash.length === originalHash.length &&
+    crypto.timingSafeEqual(testHash, originalHash)
+  );
 }
 
-function extractToken(req) {
-  const authorization =
-    String(
-      req.headers.authorization || ''
-    );
-
-  if (
-    authorization.startsWith(
-      'Bearer '
-    )
-  ) {
-    return authorization
-      .slice(7)
-      .trim();
-  }
-
-  return String(
-    req.headers[
-      'x-session-token'
-    ] || ''
-  ).trim();
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
 }
 
-async function createSession(
-  role,
-  userId
-) {
-  const token =
-    crypto
-      .randomBytes(32)
-      .toString('hex');
+function normalizeUsername(username) {
+  return String(username || '').trim();
+}
 
-  const { error } =
-    await supabase
+function validEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function moneyToCents(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return 0;
+  }
+
+  return Math.round(number * 100);
+}
+
+function centsToMoney(cents) {
+  return Number(cents || 0) / 100;
+}
+
+function makeOrderNSU() {
+  return `IGP-${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+}
+
+/* =========================================================
+   SESSÕES
+========================================================= */
+
+async function createSession(usuarioId, tipo) {
+  const token = crypto.randomBytes(32).toString('hex');
+
+  const row = {
+    usuario_id: usuarioId || null,
+    token,
+    ativo: true,
+    created_at: new Date().toISOString()
+  };
+
+  /*
+    Se a tabela sessoes possuir a coluna tipo, salvamos.
+    Se não possuir, o restante do sistema continua funcionando
+    usando usuario_id nulo para identificar o administrador.
+  */
+  if (tipo) {
+    row.tipo = tipo;
+  }
+
+  let result = await supabase
+    .from('sessoes')
+    .insert(row)
+    .select()
+    .single();
+
+  /*
+    Compatibilidade caso tipo ainda não exista na tabela.
+  */
+  if (result.error && row.tipo) {
+    const fallback = {
+      usuario_id: usuarioId || null,
+      token,
+      ativo: true,
+      created_at: new Date().toISOString()
+    };
+
+    result = await supabase
       .from('sessoes')
-      .insert({
-        usuario_id:
-          userId || null,
+      .insert(fallback)
+      .select()
+      .single();
+  }
 
-        token,
-
-        ativo: true
-      });
-
-  if (error) {
-    throw error;
+  if (result.error) {
+    throw new Error(result.error.message);
   }
 
   return token;
 }
 
 async function getSession(req) {
-  const token =
-    extractToken(req);
+  const token = getToken(req);
 
   if (!token) {
     return null;
   }
 
-  const { data: session, error } =
-    await supabase
-      .from('sessoes')
-      .select(
-        'id, usuario_id, token, ativo, created_at'
-      )
-      .eq('token', token)
-      .eq('ativo', true)
-      .maybeSingle();
+  const { data, error } = await supabase
+    .from('sessoes')
+    .select('*')
+    .eq('token', token)
+    .eq('ativo', true)
+    .maybeSingle();
 
-  if (
-    error ||
-    !session
-  ) {
+  if (error || !data) {
     return null;
   }
 
-  const createdAt =
-    new Date(
-      session.created_at
-    ).getTime();
+  const created = new Date(data.created_at).getTime();
 
   if (
-    !Number.isFinite(createdAt) ||
-    Date.now() - createdAt >
-      SESSION_TTL
+    Number.isFinite(created) &&
+    Date.now() - created > SESSION_TTL
   ) {
     await supabase
       .from('sessoes')
-      .update({
-        ativo: false
-      })
-      .eq(
-        'id',
-        session.id
-      );
+      .update({ ativo: false })
+      .eq('id', data.id);
 
+    return null;
+  }
+
+  return data;
+}
+
+async function logoutSession(req) {
+  const token = getToken(req);
+
+  if (!token) {
+    return;
+  }
+
+  await supabase
+    .from('sessoes')
+    .update({ ativo: false })
+    .eq('token', token);
+}
+
+async function requireLogin(req, res) {
+  const session = await getSession(req);
+
+  if (!session) {
+    sendJson(res, 401, {
+      ok: false,
+      error: 'Não autenticado.'
+    });
+
+    return null;
+  }
+
+  return session;
+}
+
+async function requireAdmin(req, res) {
+  const session = await requireLogin(req, res);
+
+  if (!session) {
     return null;
   }
 
   /*
-   * Sessão administrativa.
-   */
-  if (!session.usuario_id) {
+    Admin usa sessão sem usuario_id.
+  */
+  const isAdmin =
+    session.tipo === 'admin' ||
+    session.usuario_id === null ||
+    session.usuario_id === undefined;
+
+  if (!isAdmin) {
+    sendJson(res, 403, {
+      ok: false,
+      error: 'Acesso de administrador necessário.'
+    });
+
+    return null;
+  }
+
+  return session;
+}
+
+/* =========================================================
+   INFINITEPAY
+========================================================= */
+
+async function getStoreConfig() {
+  const { data, error } = await supabase
+    .from('configuracoes_loja')
+    .select('*')
+    .eq('id', 1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data || {
+    id: 1,
+    pix_ativo: true,
+    cartao_ativo: true,
+    infinitepay_ativo: false,
+    infinitepay_handle: ''
+  };
+}
+
+async function createInfinitePayCheckout({
+  orderNSU,
+  handle,
+  items,
+  customer
+}) {
+  if (!handle) {
+    throw new Error(
+      'A InfiniteTag da InfinitePay ainda não foi configurada no ADM.'
+    );
+  }
+
+  const payload = {
+    handle,
+    order_nsu: orderNSU,
+    redirect_url: `${PUBLIC_URL}/pagamento.html`,
+    webhook_url: `${PUBLIC_URL}/api/payments/infinitepay/webhook`,
+    items
+  };
+
+  if (customer && customer.email) {
+    payload.customer = {
+      name: customer.name || customer.username || 'Cliente',
+      email: customer.email,
+      phone_number: customer.phone_number || undefined
+    };
+  }
+
+  const response = await fetch(
+    'https://api.checkout.infinitepay.io/links',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  const text = await response.text();
+
+  let result;
+
+  try {
+    result = JSON.parse(text);
+  } catch {
+    result = {};
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      result.message ||
+      result.error ||
+      `InfinitePay retornou HTTP ${response.status}.`
+    );
+  }
+
+  if (!result.url) {
+    throw new Error(
+      'A InfinitePay não retornou o link de pagamento.'
+    );
+  }
+
+  return result;
+}
+
+async function checkInfinitePayPayment({
+  handle,
+  orderNSU,
+  transactionNSU,
+  slug
+}) {
+  if (!handle || !orderNSU || !transactionNSU || !slug) {
     return {
-      role: 'admin',
-      id: null,
-      token,
-      sessionId:
-        session.id
+      success: false,
+      paid: false
+    };
+  }
+
+  const response = await fetch(
+    'https://api.checkout.infinitepay.io/payment_check',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        handle,
+        order_nsu: orderNSU,
+        transaction_nsu: transactionNSU,
+        slug
+      })
+    }
+  );
+
+  const text = await response.text();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {
+      success: false,
+      paid: false
+    };
+  }
+}
+
+/* =========================================================
+   PAGAMENTO APROVADO
+========================================================= */
+
+async function creditApprovedPayment(payment, webhook) {
+  if (!payment) {
+    return {
+      ok: false,
+      error: 'Pagamento não encontrado.'
     };
   }
 
   /*
-   * Busca o usuário.
-   * AGORA TAMBÉM BUSCA O E-MAIL.
-   */
-  const {
-    data: user,
-    error: userError
-  } = await supabase
-    .from('usuarios')
-    .select(
-      'id, username, email, minutos, plano, created_at'
-    )
-    .eq(
-      'id',
-      session.usuario_id
-    )
-    .maybeSingle();
-
-  if (
-    userError ||
-    !user
-  ) {
-    return null;
+    Idempotência:
+    se já foi pago, não adiciona os minutos novamente.
+  */
+  if (payment.status === 'pago') {
+    return {
+      ok: true,
+      alreadyPaid: true
+    };
   }
 
+  const config = await getStoreConfig();
+
+  if (
+    !config.infinitepay_handle ||
+    !webhook.transaction_nsu ||
+    !webhook.invoice_slug ||
+    !webhook.order_nsu
+  ) {
+    return {
+      ok: false,
+      error: 'Dados insuficientes para confirmar o pagamento.'
+    };
+  }
+
+  const check = await checkInfinitePayPayment({
+    handle: config.infinitepay_handle,
+    orderNSU: webhook.order_nsu,
+    transactionNSU: webhook.transaction_nsu,
+    slug: webhook.invoice_slug
+  });
+
+  if (!check.success || !check.paid) {
+    return {
+      ok: false,
+      error: 'Pagamento ainda não confirmado pela InfinitePay.'
+    };
+  }
+
+  const receivedAmount = Number(
+    check.paid_amount ?? check.amount ?? 0
+  );
+
+  const expectedAmount = moneyToCents(payment.valor);
+
+  if (receivedAmount < expectedAmount) {
+    return {
+      ok: false,
+      error: 'Valor recebido menor que o valor do pedido.'
+    };
+  }
+
+  /*
+    Atualiza pagamento primeiro somente depois da confirmação
+    oficial da InfinitePay.
+  */
+  const { data: updatedPayment, error: paymentError } =
+    await supabase
+      .from('pagamentos')
+      .update({
+        status: 'pago',
+        pagamento_id: String(webhook.transaction_nsu),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', payment.id)
+      .eq('status', 'pendente')
+      .select()
+      .maybeSingle();
+
+  if (paymentError) {
+    throw new Error(paymentError.message);
+  }
+
+  /*
+    Outra chamada pode ter processado o pagamento primeiro.
+  */
+  if (!updatedPayment) {
+    const { data: current } = await supabase
+      .from('pagamentos')
+      .select('status')
+      .eq('id', payment.id)
+      .maybeSingle();
+
+    return {
+      ok: current?.status === 'pago',
+      alreadyPaid: current?.status === 'pago'
+    };
+  }
+
+  const { data: user, error: userError } = await supabase
+    .from('usuarios')
+    .select('id,minutos')
+    .eq('id', payment.usuario_id)
+    .single();
+
+  if (userError || !user) {
+    throw new Error(
+      userError?.message || 'Usuário não encontrado.'
+    );
+  }
+
+  const novosMinutos =
+    Number(user.minutos || 0) +
+    Number(payment.minutos || 0);
+
+  const { error: updateUserError } = await supabase
+    .from('usuarios')
+    .update({
+      minutos: novosMinutos
+    })
+    .eq('id', user.id);
+
+  if (updateUserError) {
+    /*
+      Se a confirmação foi salva mas o crédito falhou,
+      deixamos o pagamento marcado como erro de crédito.
+      O ADM poderá identificar e corrigir.
+    */
+    await supabase
+      .from('pagamentos')
+      .update({
+        status: 'erro_credito',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', payment.id);
+
+    throw new Error(updateUserError.message);
+  }
+
+  await supabase
+    .from('pedidos')
+    .update({
+      status: 'pago'
+    })
+    .eq('id', payment.pedido_id);
+
   return {
-    role: 'user',
-
-    id: user.id,
-
-    user,
-
-    token,
-
-    sessionId:
-      session.id
+    ok: true,
+    minutosAdicionados: Number(payment.minutos || 0),
+    novoSaldo: novosMinutos
   };
 }
 
-async function migrateLegacyUsers() {
+/* =========================================================
+   API
+========================================================= */
+
+async function handleApi(req, res) {
+  const pathname = routePath(req);
+  const method = req.method.toUpperCase();
+
+  /*
+    ---------------------------------------------------------
+    HEALTH
+    ---------------------------------------------------------
+  */
   if (
-    !fs.existsSync(DATA_FILE)
+    pathname === '/api/health' &&
+    method === 'GET'
   ) {
-    return;
+    const { error } = await supabase
+      .from('usuarios')
+      .select('id')
+      .limit(1);
+
+    if (error) {
+      sendJson(res, 500, {
+        ok: false,
+        database: 'supabase',
+        error: error.message
+      });
+
+      return true;
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      database: 'supabase',
+      payment: 'infinitepay'
+    });
+
+    return true;
   }
 
-  try {
-    const legacy =
-      JSON.parse(
-        fs.readFileSync(
-          DATA_FILE,
-          'utf8'
-        )
-      );
+  /*
+    ---------------------------------------------------------
+    REGISTRO
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/register' &&
+    method === 'POST'
+  ) {
+    try {
+      const body = await readJson(req);
 
-    if (
-      !Array.isArray(
-        legacy.users
-      ) ||
-      legacy.users.length === 0
-    ) {
-      return;
-    }
+      const username = normalizeUsername(body.username);
+      const email = normalizeEmail(body.email);
+      const password = String(body.password || '');
 
-    for (
-      const oldUser
-      of legacy.users
-    ) {
-      const username =
-        normalizeUser(
-          oldUser.username
-        );
+      if (username.length < 3) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'O usuário precisa ter pelo menos 3 caracteres.'
+        });
 
-      const password =
-        String(
-          oldUser.password || ''
-        );
-
-      if (
-        !username ||
-        !password
-      ) {
-        continue;
+        return true;
       }
 
-      const {
-        data: existing
-      } = await supabase
+      if (!validEmail(email)) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Informe um e-mail válido.'
+        });
+
+        return true;
+      }
+
+      if (password.length < 6) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'A senha precisa ter pelo menos 6 caracteres.'
+        });
+
+        return true;
+      }
+
+      const { data: existingUser } = await supabase
         .from('usuarios')
-        .select('id')
-        .eq(
-          'username',
-          username
+        .select('id,username,email')
+        .or(
+          `username.eq.${username},email.eq.${email}`
         )
+        .limit(1)
         .maybeSingle();
-
-      if (existing) {
-        continue;
-      }
-
-      const { error } =
-        await supabase
-          .from('usuarios')
-          .insert({
-            username,
-
-            password:
-              hashPassword(
-                password
-              ),
-
-            minutos:
-              Number(
-                oldUser.minutos ||
-                  0
-              ),
-
-            plano:
-              String(
-                oldUser.plano ||
-                  'nenhum'
-              )
-          });
-
-      if (error) {
-        console.error(
-          `Não foi possível migrar ${username}:`,
-          error.message
-        );
-      } else {
-        console.log(
-          `Usuário migrado: ${username}`
-        );
-      }
-    }
-  } catch (error) {
-    console.error(
-      'Falha na migração:',
-      error.message
-    );
-  }
-}
-
-async function handleApi(
-  req,
-  res,
-  url
-) {
-  try {
-
-    /*
-     * TESTE DO SUPABASE
-     */
-    if (
-      url.pathname ===
-        '/api/health' &&
-      req.method === 'GET'
-    ) {
-      const { error } =
-        await supabase
-          .from('usuarios')
-          .select('id')
-          .limit(1);
-
-      if (error) {
-        return sendJson(
-          res,
-          500,
-          {
-            ok: false,
-            error:
-              'Supabase indisponível'
-          }
-        );
-      }
-
-      return sendJson(
-        res,
-        200,
-        {
-          ok: true,
-          database:
-            'supabase'
-        }
-      );
-    }
-
-    /*
-     * PLANOS
-     */
-    if (
-      url.pathname ===
-        '/api/packages' &&
-      req.method === 'GET'
-    ) {
-      return sendJson(
-        res,
-        200,
-        {
-          ok: true,
-          packages:
-            PACKAGES
-        }
-      );
-    }
-
-    /*
-     * CADASTRO
-     *
-     * Aceita:
-     *
-     * {
-     *   username: "...",
-     *   email: "...",
-     *   password: "..."
-     * }
-     *
-     * Também aceita user/pass para
-     * compatibilidade com o frontend.
-     */
-    if (
-      url.pathname ===
-        '/api/register' &&
-      req.method === 'POST'
-    ) {
-      const body =
-        await readBody(req);
-
-      /*
-       * USUÁRIO
-       */
-      const username =
-        normalizeUser(
-          body.username ||
-          body.user ||
-          ''
-        );
-
-      /*
-       * E-MAIL
-       */
-      const email =
-        normalizeEmail(
-          body.email ||
-          ''
-        );
-
-      /*
-       * SENHA
-       */
-      const password =
-        String(
-          body.password ||
-          body.pass ||
-          ''
-        );
-
-      /*
-       * VALIDAÇÃO
-       */
-      if (
-        !username ||
-        !email ||
-        !email.includes('@') ||
-        password.length < 6
-      ) {
-        return sendJson(
-          res,
-          400,
-          {
-            ok: false,
-
-            error:
-              'Informe usuário, e-mail e uma senha com pelo menos 6 caracteres.'
-          }
-        );
-      }
-
-      /*
-       * VERIFICA USUÁRIO
-       */
-      const {
-        data: existingUser,
-        error:
-          lookupUserError
-      } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq(
-          'username',
-          username
-        )
-        .maybeSingle();
-
-      if (lookupUserError) {
-        throw lookupUserError;
-      }
 
       if (existingUser) {
-        return sendJson(
-          res,
-          409,
-          {
-            ok: false,
-            error:
-              'Usuário já cadastrado.'
-          }
-        );
+        sendJson(res, 409, {
+          ok: false,
+          error: 'Usuário ou e-mail já cadastrado.'
+        });
+
+        return true;
       }
 
-      /*
-       * VERIFICA E-MAIL
-       */
-      const {
-        data: existingEmail,
-        error:
-          lookupEmailError
-      } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq(
-          'email',
-          email
-        )
-        .maybeSingle();
+      const passwordHash = hashPassword(password);
 
-      if (lookupEmailError) {
-        throw lookupEmailError;
-      }
-
-      if (existingEmail) {
-        return sendJson(
-          res,
-          409,
-          {
-            ok: false,
-            error:
-              'E-mail já cadastrado.'
-          }
-        );
-      }
-
-      /*
-       * CRIA CONTA
-       */
-      const {
-        data: created,
-        error
-      } = await supabase
+      const { data: user, error } = await supabase
         .from('usuarios')
         .insert({
           username,
-
           email,
-
-          password:
-            hashPassword(
-              password
-            ),
-
+          password: passwordHash,
           minutos: 0,
-
-          plano:
-            'nenhum'
+          plano: 'nenhum',
+          bloqueado: false
         })
         .select(
-          'id, username, email, minutos, plano, created_at'
+          'id,username,email,minutos,plano,bloqueado,created_at'
         )
         .single();
 
       if (error) {
-        throw error;
+        sendJson(res, 400, {
+          ok: false,
+          error: error.message
+        });
+
+        return true;
       }
 
-      return sendJson(
-        res,
-        201,
-        {
-          ok: true,
+      sendJson(res, 201, {
+        ok: true,
+        user
+      });
 
-          user: created
-        }
-      );
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
     }
+  }
 
-    /*
-     * LOGIN
-     *
-     * Agora permite:
-     *
-     * usuário
-     *
-     * OU
-     *
-     * e-mail
-     */
-    if (
-      url.pathname ===
-        '/api/login' &&
-      req.method === 'POST'
-    ) {
-      const body =
-        await readBody(req);
+  /*
+    ---------------------------------------------------------
+    LOGIN
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/login' &&
+    method === 'POST'
+  ) {
+    try {
+      const body = await readJson(req);
 
-      const user =
-        normalizeUser(
-          body.user ||
-          body.username ||
-          body.email ||
-          ''
-        );
+      const user = normalizeUsername(
+        body.user || body.username
+      );
 
-      const pass =
-        String(
-          body.pass ||
-          body.password ||
-          ''
-        );
+      const pass = String(
+        body.pass || body.password || ''
+      );
 
       /*
-       * ADMIN
-       */
+        ADMIN
+      */
       if (
-        user ===
-          normalizeUser(
-            ADMIN_USER
-          ) &&
-        pass ===
-          ADMIN_PASSWORD
+        user === ADMIN_USER &&
+        pass === ADMIN_PASSWORD
       ) {
-        const token =
-          await createSession(
-            'admin',
-            null
-          );
-
-        return sendJson(
-          res,
-          200,
-          {
-            ok: true,
-
-            token,
-
-            role: 'admin'
-          }
+        const token = await createSession(
+          null,
+          'admin'
         );
+
+        sendJson(res, 200, {
+          ok: true,
+          token,
+          role: 'admin'
+        });
+
+        return true;
       }
 
       /*
-       * PRIMEIRO:
-       * procura pelo usuário
-       */
-      let {
-        data: found,
-        error
-      } = await supabase
+        USUÁRIO
+      */
+      const { data: found, error } = await supabase
         .from('usuarios')
         .select(
-          'id, username, email, password, minutos, plano, created_at'
+          'id,username,email,password,minutos,plano,bloqueado,created_at'
         )
-        .eq(
-          'username',
-          user
-        )
+        .eq('username', user)
         .maybeSingle();
 
-      if (error) {
-        throw error;
+      if (error || !found) {
+        sendJson(res, 401, {
+          ok: false,
+          error: 'Usuário ou senha incorretos.'
+        });
+
+        return true;
       }
 
-      /*
-       * SE NÃO ENCONTROU,
-       * PROCURA PELO E-MAIL.
-       */
-      if (!found) {
-        const result =
-          await supabase
-            .from('usuarios')
-            .select(
-              'id, username, email, password, minutos, plano, created_at'
-            )
-            .eq(
-              'email',
-              user
-            )
-            .maybeSingle();
+      if (found.bloqueado) {
+        sendJson(res, 403, {
+          ok: false,
+          error: 'Esta conta está bloqueada.'
+        });
 
-        if (result.error) {
-          throw result.error;
+        return true;
+      }
+
+      if (!verifyPassword(pass, found.password)) {
+        sendJson(res, 401, {
+          ok: false,
+          error: 'Usuário ou senha incorretos.'
+        });
+
+        return true;
+      }
+
+      const token = await createSession(
+        found.id,
+        'user'
+      );
+
+      sendJson(res, 200, {
+        ok: true,
+        token,
+        role: 'user',
+        user: {
+          id: found.id,
+          username: found.username,
+          email: found.email,
+          minutos: found.minutos,
+          plano: found.plano,
+          bloqueado: found.bloqueado
         }
+      });
 
-        found =
-          result.data;
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+
+  /*
+    ---------------------------------------------------------
+    LOGOUT
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/logout' &&
+    method === 'POST'
+  ) {
+    await logoutSession(req);
+
+    sendJson(res, 200, {
+      ok: true
+    });
+
+    return true;
+  }
+
+  /*
+    ---------------------------------------------------------
+    ME
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/me' &&
+    method === 'GET'
+  ) {
+    const session = await requireLogin(req, res);
+
+    if (!session) {
+      return true;
+    }
+
+    if (
+      session.tipo === 'admin' ||
+      session.usuario_id === null
+    ) {
+      sendJson(res, 200, {
+        ok: true,
+        role: 'admin'
+      });
+
+      return true;
+    }
+
+    const { data: user, error } = await supabase
+      .from('usuarios')
+      .select(
+        'id,username,email,minutos,plano,bloqueado,created_at'
+      )
+      .eq('id', session.usuario_id)
+      .maybeSingle();
+
+    if (error || !user) {
+      sendJson(res, 404, {
+        ok: false,
+        error: 'Usuário não encontrado.'
+      });
+
+      return true;
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      role: 'user',
+      user
+    });
+
+    return true;
+  }
+
+  /*
+    ---------------------------------------------------------
+    PACOTES PÚBLICOS
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/packages' &&
+    method === 'GET'
+  ) {
+    const { data, error } = await supabase
+      .from('pacotes_minutos')
+      .select(
+        'id,nome,minutos,preco,descricao,ativo,ordem,created_at,updated_at'
+      )
+      .eq('ativo', true)
+      .order('ordem', { ascending: true });
+
+    if (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      packages: data || []
+    });
+
+    return true;
+  }
+
+  /*
+    ---------------------------------------------------------
+    CRIAR PEDIDO
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/orders' &&
+    method === 'POST'
+  ) {
+    try {
+      const session = await requireLogin(req, res);
+
+      if (!session) {
+        return true;
+      }
+
+      if (
+        session.tipo === 'admin' ||
+        session.usuario_id === null
+      ) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Administrador não pode criar pedido de cliente.'
+        });
+
+        return true;
+      }
+
+      const body = await readJson(req);
+
+      const packageId = String(
+        body.packageId ||
+        body.pacote_id ||
+        ''
+      ).trim();
+
+      if (!packageId) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Pacote não informado.'
+        });
+
+        return true;
+      }
+
+      const { data: user, error: userError } =
+        await supabase
+          .from('usuarios')
+          .select(
+            'id,username,email,minutos,bloqueado'
+          )
+          .eq('id', session.usuario_id)
+          .single();
+
+      if (userError || !user) {
+        sendJson(res, 404, {
+          ok: false,
+          error: 'Usuário não encontrado.'
+        });
+
+        return true;
+      }
+
+      if (user.bloqueado) {
+        sendJson(res, 403, {
+          ok: false,
+          error: 'Conta bloqueada.'
+        });
+
+        return true;
+      }
+
+      const { data: pacote, error: packageError } =
+        await supabase
+          .from('pacotes_minutos')
+          .select(
+            'id,nome,minutos,preco,descricao,ativo'
+          )
+          .eq('id', packageId)
+          .eq('ativo', true)
+          .single();
+
+      if (packageError || !pacote) {
+        sendJson(res, 404, {
+          ok: false,
+          error: 'Pacote não encontrado ou indisponível.'
+        });
+
+        return true;
+      }
+
+      const valor = Number(pacote.preco);
+      const minutos = Number(pacote.minutos);
+
+      if (
+        !Number.isFinite(valor) ||
+        valor < 0 ||
+        !Number.isInteger(minutos) ||
+        minutos <= 0
+      ) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Pacote inválido.'
+        });
+
+        return true;
+      }
+
+      const config = await getStoreConfig();
+
+      if (!config.infinitepay_ativo) {
+        sendJson(res, 503, {
+          ok: false,
+          error: 'Pagamento InfinitePay está desativado.'
+        });
+
+        return true;
+      }
+
+      if (!config.infinitepay_handle) {
+        sendJson(res, 503, {
+          ok: false,
+          error: 'InfinitePay ainda não foi configurada pelo administrador.'
+        });
+
+        return true;
       }
 
       /*
-       * CONFERE SENHA
-       */
-      if (
-        !found ||
-        !verifyPassword(
-          pass,
-          found.password
-        )
-      ) {
-        return sendJson(
-          res,
-          401,
+        Cria pedido.
+      */
+      const { data: pedido, error: orderError } =
+        await supabase
+          .from('pedidos')
+          .insert({
+            usuario_id: user.id,
+            valor,
+            status: 'pendente'
+          })
+          .select()
+          .single();
+
+      if (orderError || !pedido) {
+        sendJson(res, 500, {
+          ok: false,
+          error:
+            orderError?.message ||
+            'Não foi possível criar o pedido.'
+        });
+
+        return true;
+      }
+
+      /*
+        Cria registro de pagamento.
+      */
+      const { data: pagamento, error: paymentError } =
+        await supabase
+          .from('pagamentos')
+          .insert({
+            usuario_id: user.id,
+            pacote_id: pacote.id,
+            pedido_id: pedido.id,
+            valor,
+            minutos,
+            provedor: 'infinitepay',
+            metodo: null,
+            pagamento_id: null,
+            status: 'pendente'
+          })
+          .select()
+          .single();
+
+      if (paymentError || !pagamento) {
+        await supabase
+          .from('pedidos')
+          .update({
+            status: 'erro'
+          })
+          .eq('id', pedido.id);
+
+        sendJson(res, 500, {
+          ok: false,
+          error:
+            paymentError?.message ||
+            'Não foi possível criar o pagamento.'
+        });
+
+        return true;
+      }
+
+      const orderNSU = makeOrderNSU();
+
+      /*
+        O order_nsu identifica esse pedido dentro
+        da InfinitePay.
+      */
+      const checkout = await createInfinitePayCheckout({
+        orderNSU,
+        handle: config.infinitepay_handle,
+        items: [
           {
-            ok: false,
-            error:
-              'Dados incorretos'
+            quantity: 1,
+            price: moneyToCents(valor),
+            description:
+              `${pacote.nome} - ${minutos} minutos`
           }
+        ],
+        customer: {
+          name: user.username,
+          username: user.username,
+          email: user.email
+        }
+      });
+
+      /*
+        Guardamos o order_nsu no pagamento.
+      */
+      const { error: saveNsuError } =
+        await supabase
+          .from('pagamentos')
+          .update({
+            pagamento_id: orderNSU
+          })
+          .eq('id', pagamento.id);
+
+      if (saveNsuError) {
+        console.error(
+          'Erro salvando order_nsu:',
+          saveNsuError.message
         );
       }
 
+      sendJson(res, 201, {
+        ok: true,
+        order: pedido,
+        payment: {
+          id: pagamento.id,
+          status: 'pendente',
+          provider: 'infinitepay',
+          order_nsu: orderNSU
+        },
+        checkout_url: checkout.url
+      });
+
+      return true;
+
+    } catch (error) {
+      console.error('Erro criando pedido:', error);
+
+      sendJson(res, 500, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+
+  /*
+    ---------------------------------------------------------
+    PEDIDOS DO USUÁRIO
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/orders' &&
+    method === 'GET'
+  ) {
+    const session = await requireLogin(req, res);
+
+    if (!session) {
+      return true;
+    }
+
+    if (
+      session.tipo === 'admin' ||
+      session.usuario_id === null
+    ) {
+      sendJson(res, 400, {
+        ok: false,
+        error: 'Use a área administrativa.'
+      });
+
+      return true;
+    }
+
+    const { data, error } = await supabase
+      .from('pedidos')
+      .select(
+        'id,usuario_id,valor,status,created_at'
+      )
+      .eq('usuario_id', session.usuario_id)
+      .order('created_at', {
+        ascending: false
+      });
+
+    if (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      orders: data || []
+    });
+
+    return true;
+  }
+
+  /*
+    ---------------------------------------------------------
+    WEBHOOK INFINITEPAY
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/payments/infinitepay/webhook' &&
+    method === 'POST'
+  ) {
+    try {
+      const body = await readJson(req);
+
+      const orderNSU = String(
+        body.order_nsu || ''
+      ).trim();
+
+      const transactionNSU = String(
+        body.transaction_nsu || ''
+      ).trim();
+
+      const slug = String(
+        body.invoice_slug || body.slug || ''
+      ).trim();
+
+      if (!orderNSU) {
+        sendJson(res, 400, {
+          success: false,
+          message: 'order_nsu não informado.'
+        });
+
+        return true;
+      }
+
       /*
-       * CONVERTE CONTAS ANTIGAS
-       * QUE AINDA TENHAM SENHA
-       * EM TEXTO SIMPLES.
-       */
+        Localiza o pagamento pelo order_nsu.
+      */
+      const { data: payment, error } =
+        await supabase
+          .from('pagamentos')
+          .select('*')
+          .eq('pagamento_id', orderNSU)
+          .maybeSingle();
+
+      if (error) {
+        sendJson(res, 400, {
+          success: false,
+          message: error.message
+        });
+
+        return true;
+      }
+
+      if (!payment) {
+        /*
+          A InfinitePay pode reenviar.
+          Se o pedido não existe, 400 faz sentido
+          porque a própria documentação informa que
+          ela tenta novamente quando recebe 400.
+        */
+        sendJson(res, 400, {
+          success: false,
+          message: 'Pedido não encontrado.'
+        });
+
+        return true;
+      }
+
+      if (payment.status === 'pago') {
+        sendJson(res, 200, {
+          success: true,
+          message: null
+        });
+
+        return true;
+      }
+
+      /*
+        Confirma o pagamento na própria InfinitePay
+        antes de liberar os minutos.
+      */
+      const result = await creditApprovedPayment(
+        payment,
+        {
+          ...body,
+          order_nsu: orderNSU,
+          transaction_nsu: transactionNSU,
+          invoice_slug: slug
+        }
+      );
+
+      if (!result.ok) {
+        sendJson(res, 400, {
+          success: false,
+          message: result.error || 'Pagamento não confirmado.'
+        });
+
+        return true;
+      }
+
+      sendJson(res, 200, {
+        success: true,
+        message: null
+      });
+
+      return true;
+
+    } catch (error) {
+      console.error(
+        'Erro webhook InfinitePay:',
+        error
+      );
+
+      sendJson(res, 400, {
+        success: false,
+        message: error.message
+      });
+
+      return true;
+    }
+  }
+
+  /*
+    ---------------------------------------------------------
+    VERIFICAR PAGAMENTO MANUALMENTE
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/payments/infinitepay/check' &&
+    method === 'POST'
+  ) {
+    try {
+      const session = await requireLogin(req, res);
+
+      if (!session) {
+        return true;
+      }
+
       if (
-        !String(
-          found.password
-        ).startsWith(
-          'scrypt$'
-        )
+        session.tipo === 'admin' ||
+        session.usuario_id === null
       ) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Operação disponível somente para clientes.'
+        });
+
+        return true;
+      }
+
+      const body = await readJson(req);
+
+      const paymentId = String(
+        body.payment_id || ''
+      ).trim();
+
+      if (!paymentId) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Pagamento não informado.'
+        });
+
+        return true;
+      }
+
+      const { data: payment, error } =
+        await supabase
+          .from('pagamentos')
+          .select('*')
+          .eq('id', paymentId)
+          .eq('usuario_id', session.usuario_id)
+          .maybeSingle();
+
+      if (error || !payment) {
+        sendJson(res, 404, {
+          ok: false,
+          error: 'Pagamento não encontrado.'
+        });
+
+        return true;
+      }
+
+      if (payment.status === 'pago') {
+        sendJson(res, 200, {
+          ok: true,
+          paid: true
+        });
+
+        return true;
+      }
+
+      const config = await getStoreConfig();
+
+      /*
+        pagamento_id começa como order_nsu.
+      */
+      const orderNSU = payment.pagamento_id;
+
+      if (!orderNSU) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Pedido ainda não possui identificador de pagamento.'
+        });
+
+        return true;
+      }
+
+      /*
+        Aqui só conseguimos confirmar se temos os
+        dados da transação vindos do checkout.
+      */
+      const transactionNSU = String(
+        body.transaction_nsu || ''
+      );
+
+      const slug = String(
+        body.slug || ''
+      );
+
+      if (!transactionNSU || !slug) {
+        sendJson(res, 200, {
+          ok: true,
+          paid: false,
+          status: payment.status
+        });
+
+        return true;
+      }
+
+      const check = await checkInfinitePayPayment({
+        handle: config.infinitepay_handle,
+        orderNSU,
+        transactionNSU,
+        slug
+      });
+
+      if (!check.success || !check.paid) {
+        sendJson(res, 200, {
+          ok: true,
+          paid: false,
+          status: payment.status
+        });
+
+        return true;
+      }
+
+      const result = await creditApprovedPayment(
+        payment,
+        {
+          order_nsu: orderNSU,
+          transaction_nsu: transactionNSU,
+          invoice_slug: slug
+        }
+      );
+
+      sendJson(res, 200, {
+        ok: result.ok,
+        paid: result.ok,
+        result
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+
+  /*
+    =========================================================
+    ADMIN - PACOTES
+    =========================================================
+  */
+
+  if (
+    pathname === '/api/admin/packages' &&
+    method === 'GET'
+  ) {
+    const admin = await requireAdmin(req, res);
+
+    if (!admin) {
+      return true;
+    }
+
+    const { data, error } = await supabase
+      .from('pacotes_minutos')
+      .select('*')
+      .order('ordem', {
+        ascending: true
+      });
+
+    if (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      packages: data || []
+    });
+
+    return true;
+  }
+
+  if (
+    pathname === '/api/admin/packages' &&
+    method === 'POST'
+  ) {
+    try {
+      const admin = await requireAdmin(req, res);
+
+      if (!admin) {
+        return true;
+      }
+
+      const body = await readJson(req);
+
+      const nome = String(
+        body.nome || body.name || ''
+      ).trim();
+
+      const minutos = Number(body.minutos);
+      const preco = Number(body.preco);
+
+      const descricao = String(
+        body.descricao || body.description || ''
+      ).trim();
+
+      const ativo =
+        body.ativo === undefined
+          ? true
+          : Boolean(body.ativo);
+
+      const ordem = Number(
+        body.ordem || 0
+      );
+
+      if (!nome) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Nome do pacote é obrigatório.'
+        });
+
+        return true;
+      }
+
+      if (
+        !Number.isInteger(minutos) ||
+        minutos <= 0
+      ) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Quantidade de minutos inválida.'
+        });
+
+        return true;
+      }
+
+      if (
+        !Number.isFinite(preco) ||
+        preco < 0
+      ) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Preço inválido.'
+        });
+
+        return true;
+      }
+
+      const { data, error } = await supabase
+        .from('pacotes_minutos')
+        .insert({
+          nome,
+          minutos,
+          preco,
+          descricao,
+          ativo,
+          ordem
+        })
+        .select()
+        .single();
+
+      if (error) {
+        sendJson(res, 400, {
+          ok: false,
+          error: error.message
+        });
+
+        return true;
+      }
+
+      sendJson(res, 201, {
+        ok: true,
+        package: data
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+
+  if (
+    pathname.startsWith('/api/admin/packages/') &&
+    method === 'PUT'
+  ) {
+    try {
+      const admin = await requireAdmin(req, res);
+
+      if (!admin) {
+        return true;
+      }
+
+      const id = getRouteId(
+        req,
+        '/api/admin/packages/'
+      );
+
+      if (!id) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'ID do pacote não informado.'
+        });
+
+        return true;
+      }
+
+      const body = await readJson(req);
+
+      const update = {};
+
+      if (body.nome !== undefined) {
+        update.nome = String(body.nome).trim();
+      }
+
+      if (body.minutos !== undefined) {
+        update.minutos = Number(body.minutos);
+      }
+
+      if (body.preco !== undefined) {
+        update.preco = Number(body.preco);
+      }
+
+      if (body.descricao !== undefined) {
+        update.descricao = String(body.descricao);
+      }
+
+      if (body.ativo !== undefined) {
+        update.ativo = Boolean(body.ativo);
+      }
+
+      if (body.ordem !== undefined) {
+        update.ordem = Number(body.ordem);
+      }
+
+      update.updated_at = new Date().toISOString();
+
+      const { data, error } = await supabase
+        .from('pacotes_minutos')
+        .update(update)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        sendJson(res, 400, {
+          ok: false,
+          error: error.message
+        });
+
+        return true;
+      }
+
+      sendJson(res, 200, {
+        ok: true,
+        package: data
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+
+  if (
+    pathname.startsWith('/api/admin/packages/') &&
+    method === 'DELETE'
+  ) {
+    try {
+      const admin = await requireAdmin(req, res);
+
+      if (!admin) {
+        return true;
+      }
+
+      const id = getRouteId(
+        req,
+        '/api/admin/packages/'
+      );
+
+      const { error } = await supabase
+        .from('pacotes_minutos')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        sendJson(res, 400, {
+          ok: false,
+          error: error.message
+        });
+
+        return true;
+      }
+
+      sendJson(res, 200, {
+        ok: true
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+
+  /*
+    =========================================================
+    ADMIN - USUÁRIOS
+    =========================================================
+  */
+
+  if (
+    pathname === '/api/admin/users' &&
+    method === 'GET'
+  ) {
+    const admin = await requireAdmin(req, res);
+
+    if (!admin) {
+      return true;
+    }
+
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select(
+        'id,username,email,minutos,plano,bloqueado,created_at'
+      )
+      .order('created_at', {
+        ascending: false
+      });
+
+    if (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      users: data || []
+    });
+
+    return true;
+  }
+
+  /*
+    Editar usuário.
+  */
+  if (
+    pathname.startsWith('/api/admin/users/') &&
+    method === 'PUT'
+  ) {
+    try {
+      const admin = await requireAdmin(req, res);
+
+      if (!admin) {
+        return true;
+      }
+
+      const id = getRouteId(
+        req,
+        '/api/admin/users/'
+      );
+
+      const body = await readJson(req);
+
+      const update = {};
+
+      if (body.username !== undefined) {
+        update.username =
+          normalizeUsername(body.username);
+      }
+
+      if (body.email !== undefined) {
+        update.email =
+          normalizeEmail(body.email);
+      }
+
+      if (body.plano !== undefined) {
+        update.plano =
+          String(body.plano).trim();
+      }
+
+      if (body.bloqueado !== undefined) {
+        update.bloqueado =
+          Boolean(body.bloqueado);
+      }
+
+      if (body.password) {
+        update.password =
+          hashPassword(body.password);
+      }
+
+      if (body.minutos !== undefined) {
+        const minutos = Number(body.minutos);
+
+        if (
+          !Number.isInteger(minutos) ||
+          minutos < 0
+        ) {
+          sendJson(res, 400, {
+            ok: false,
+            error: 'Quantidade de minutos inválida.'
+          });
+
+          return true;
+        }
+
+        update.minutos = minutos;
+      }
+
+      const { data, error } = await supabase
+        .from('usuarios')
+        .update(update)
+        .eq('id', id)
+        .select(
+          'id,username,email,minutos,plano,bloqueado,created_at'
+        )
+        .single();
+
+      if (error) {
+        sendJson(res, 400, {
+          ok: false,
+          error: error.message
+        });
+
+        return true;
+      }
+
+      sendJson(res, 200, {
+        ok: true,
+        user: data
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+
+  /*
+    Adicionar/remover minutos.
+  */
+  if (
+    pathname.startsWith('/api/admin/users/') &&
+    pathname.endsWith('/minutes') &&
+    method === 'POST'
+  ) {
+    try {
+      const admin = await requireAdmin(req, res);
+
+      if (!admin) {
+        return true;
+      }
+
+      const id = pathname
+        .replace('/api/admin/users/', '')
+        .replace('/minutes', '')
+        .replace(/^\/+|\/+$/g, '');
+
+      const body = await readJson(req);
+
+      const quantidade = Number(
+        body.minutos ??
+        body.quantidade ??
+        body.amount
+      );
+
+      if (
+        !Number.isInteger(quantidade)
+      ) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Quantidade inválida.'
+        });
+
+        return true;
+      }
+
+      const { data: user, error } =
+        await supabase
+          .from('usuarios')
+          .select('id,minutos')
+          .eq('id', id)
+          .single();
+
+      if (error || !user) {
+        sendJson(res, 404, {
+          ok: false,
+          error: 'Usuário não encontrado.'
+        });
+
+        return true;
+      }
+
+      const novoSaldo =
+        Number(user.minutos || 0) +
+        quantidade;
+
+      if (novoSaldo < 0) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'O saldo não pode ficar negativo.'
+        });
+
+        return true;
+      }
+
+      const { data, error: updateError } =
         await supabase
           .from('usuarios')
           .update({
-            password:
-              hashPassword(
-                pass
-              )
+            minutos: novoSaldo
           })
-          .eq(
-            'id',
-            found.id
-          );
+          .eq('id', id)
+          .select(
+            'id,username,email,minutos,plano,bloqueado'
+          )
+          .single();
+
+      if (updateError) {
+        sendJson(res, 400, {
+          ok: false,
+          error: updateError.message
+        });
+
+        return true;
       }
 
-      /*
-       * CRIA SESSÃO
-       */
-      const token =
-        await createSession(
-          'user',
-          found.id
-        );
+      sendJson(res, 200, {
+        ok: true,
+        user: data
+      });
 
-      return sendJson(
-        res,
-        200,
-        {
-          ok: true,
+      return true;
 
-          token,
-
-          role: 'user',
-
-          user: {
-            id: found.id,
-
-            username:
-              found.username,
-
-            email:
-              found.email,
-
-            minutos:
-              found.minutos,
-
-            plano:
-              found.plano
-          }
-        }
-      );
-    }
-
-    /*
-     * USUÁRIO LOGADO
-     */
-    if (
-      url.pathname ===
-        '/api/me' &&
-      req.method === 'GET'
-    ) {
-      const session =
-        await getSession(req);
-
-      if (!session) {
-        return sendJson(
-          res,
-          401,
-          {
-            ok: false,
-
-            error:
-              'Sessão inválida ou expirada.'
-          }
-        );
-      }
-
-      /*
-       * ADMIN
-       */
-      if (
-        session.role ===
-        'admin'
-      ) {
-        return sendJson(
-          res,
-          200,
-          {
-            ok: true,
-            role: 'admin'
-          }
-        );
-      }
-
-      /*
-       * USUÁRIO
-       */
-      return sendJson(
-        res,
-        200,
-        {
-          ok: true,
-
-          role: 'user',
-
-          user: {
-            id:
-              session.user.id,
-
-            username:
-              session.user.username,
-
-            email:
-              session.user.email,
-
-            minutos:
-              session.user.minutos,
-
-            plano:
-              session.user.plano,
-
-            created_at:
-              session.user.created_at
-          }
-        }
-      );
-    }
-
-    /*
-     * LOGOUT
-     */
-    if (
-      url.pathname ===
-        '/api/logout' &&
-      req.method === 'POST'
-    ) {
-      const token =
-        extractToken(req);
-
-      if (token) {
-        await supabase
-          .from('sessoes')
-          .update({
-            ativo: false
-          })
-          .eq(
-            'token',
-            token
-          );
-      }
-
-      return sendJson(
-        res,
-        200,
-        {
-          ok: true
-        }
-      );
-    }
-
-    /*
-     * API NÃO ENCONTRADA
-     */
-    return sendJson(
-      res,
-      404,
-      {
+    } catch (error) {
+      sendJson(res, 400, {
         ok: false,
+        error: error.message
+      });
 
-        error:
-          'API não encontrada'
-      }
-    );
-
-  } catch (error) {
-
-    console.error(
-      'Erro na API:',
-      error
-    );
-
-    return sendJson(
-      res,
-      500,
-      {
-        ok: false,
-
-        error:
-          'Erro interno do servidor'
-      }
-    );
+      return true;
+    }
   }
-}
 
-const server =
-  http.createServer(
-    async (
-      req,
-      res
-    ) => {
+  /*
+    =========================================================
+    ADMIN - CONFIGURAÇÃO DE PAGAMENTO
+    =========================================================
+  */
 
-      const url =
-        new URL(
-          req.url,
+  if (
+    pathname === '/api/admin/payment-config' &&
+    method === 'GET'
+  ) {
+    const admin = await requireAdmin(req, res);
 
-          `http://${
-            req.headers.host ||
-            'localhost'
-          }`
-        );
+    if (!admin) {
+      return true;
+    }
 
-      /*
-       * API
-       */
-      if (
-        url.pathname.startsWith(
-          '/api/'
-        )
-      ) {
-        return handleApi(
-          req,
-          res,
-          url
-        );
-      }
+    try {
+      const config = await getStoreConfig();
 
-      /*
-       * ARQUIVOS DO SITE
-       */
-      let requestPath =
-        decodeURIComponent(
-          url.pathname
-        );
-
-      if (
-        requestPath === '/'
-      ) {
-        requestPath =
-          '/index.html';
-      }
-
-      const filePath =
-        path.resolve(
-          __dirname,
-          `.${requestPath}`
-        );
-
-      const rootPath =
-        path.resolve(
-          __dirname
-        );
-
-      /*
-       * PROTEÇÃO CONTRA
-       * PATH TRAVERSAL
-       */
-      if (
-        !filePath.startsWith(
-          rootPath +
-            path.sep
-        ) &&
-        filePath !== rootPath
-      ) {
-        res.writeHead(403);
-
-        return res.end(
-          'Acesso negado'
-        );
-      }
-
-      const ext =
-        path.extname(
-          filePath
-        );
-
-      const mimeType =
-        mimeTypes[ext] ||
-        'application/octet-stream';
-
-      if (
-        !fs.existsSync(
-          filePath
-        )
-      ) {
-        res.writeHead(404);
-
-        return res.end(
-          'Página não encontrada'
-        );
-      }
-
-      fs.readFile(
-        filePath,
-        (
-          err,
-          content
-        ) => {
-
-          if (err) {
-            res.writeHead(
-              500
-            );
-
-            return res.end(
-              'Erro no servidor'
-            );
-          }
-
-          res.writeHead(
-            200,
-            {
-              'Content-Type':
-                mimeType
-            }
-          );
-
-          res.end(
-            content
-          );
+      sendJson(res, 200, {
+        ok: true,
+        config: {
+          id: config.id,
+          pix_ativo: Boolean(config.pix_ativo),
+          cartao_ativo: Boolean(config.cartao_ativo),
+          infinitepay_ativo: Boolean(
+            config.infinitepay_ativo
+          ),
+          infinitepay_handle:
+            config.infinitepay_handle || ''
         }
-      );
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
     }
-  );
+  }
 
-async function start() {
+  if (
+    pathname === '/api/admin/payment-config' &&
+    method === 'PUT'
+  ) {
+    try {
+      const admin = await requireAdmin(req, res);
 
-  await migrateLegacyUsers();
+      if (!admin) {
+        return true;
+      }
 
-  server.listen(
-    PORT,
-    () => {
+      const body = await readJson(req);
 
-      console.log(
-        `🚀 Império GamePlay rodando na porta ${PORT}`
-      );
+      const update = {
+        updated_at: new Date().toISOString()
+      };
 
-      console.log(
-        '☁️ Persistência: Supabase'
-      );
+      if (body.pix_ativo !== undefined) {
+        update.pix_ativo =
+          Boolean(body.pix_ativo);
+      }
 
-      console.log(
-        '📧 Cadastro com e-mail ativado'
-      );
+      if (body.cartao_ativo !== undefined) {
+        update.cartao_ativo =
+          Boolean(body.cartao_ativo);
+      }
 
-      console.log(
-        '🔐 Login por usuário ou e-mail ativado'
-      );
+      if (body.infinitepay_ativo !== undefined) {
+        update.infinitepay_ativo =
+          Boolean(body.infinitepay_ativo);
+      }
+
+      if (
+        body.infinitepay_handle !== undefined
+      ) {
+        update.infinitepay_handle =
+          String(
+            body.infinitepay_handle || ''
+          )
+            .trim()
+            .replace(/^\$/, '');
+      }
+
+      const { data, error } = await supabase
+        .from('configuracoes_loja')
+        .upsert({
+          id: 1,
+          ...update
+        })
+        .select()
+        .single();
+
+      if (error) {
+        sendJson(res, 400, {
+          ok: false,
+          error: error.message
+        });
+
+        return true;
+      }
+
+      sendJson(res, 200, {
+        ok: true,
+        config: data
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
     }
-  );
+  }
+
+  /*
+    =========================================================
+    ADMIN - PEDIDOS
+    =========================================================
+  */
+
+  if (
+    pathname === '/api/admin/orders' &&
+    method === 'GET'
+  ) {
+    const admin = await requireAdmin(req, res);
+
+    if (!admin) {
+      return true;
+    }
+
+    const { data, error } = await supabase
+      .from('pedidos')
+      .select(
+        'id,usuario_id,valor,status,created_at'
+      )
+      .order('created_at', {
+        ascending: false
+      });
+
+    if (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      orders: data || []
+    });
+
+    return true;
+  }
+
+  /*
+    =========================================================
+    ADMIN - DASHBOARD
+    =========================================================
+  */
+
+  if (
+    pathname === '/api/admin/dashboard' &&
+    method === 'GET'
+  ) {
+    const admin = await requireAdmin(req, res);
+
+    if (!admin) {
+      return true;
+    }
+
+    try {
+      const [
+        usersResult,
+        activePaymentsResult,
+        paidOrdersResult
+      ] = await Promise.all([
+        supabase
+          .from('usuarios')
+          .select('id', {
+            count: 'exact',
+            head: true
+          }),
+
+        supabase
+          .from('pagamentos')
+          .select('id', {
+            count: 'exact',
+            head: true
+          })
+          .eq('status', 'pendente'),
+
+        supabase
+          .from('pedidos')
+          .select('valor')
+          .eq('status', 'pago')
+      ]);
+
+      const totalUsuarios =
+        usersResult.count || 0;
+
+      const pagamentosPendentes =
+        activePaymentsResult.count || 0;
+
+      const vendas = paidOrdersResult.data || [];
+
+      const totalVendas = vendas.reduce(
+        (sum, item) =>
+          sum + Number(item.valor || 0),
+        0
+      );
+
+      sendJson(res, 200, {
+        ok: true,
+        dashboard: {
+          totalUsuarios,
+          pagamentosPendentes,
+          pedidosPagos: vendas.length,
+          totalVendas
+        }
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
-start().catch(
-  error => {
+/* =========================================================
+   ARQUIVOS DO SITE
+========================================================= */
 
-    console.error(
-      'Falha ao iniciar:',
-      error
+function safeStaticPath(req) {
+  let pathname = routePath(req);
+
+  if (pathname === '/') {
+    pathname = '/index.html';
+  }
+
+  /*
+    Evita ../.
+  */
+  pathname = pathname.replace(/\0/g, '');
+
+  const filePath = path.resolve(
+    __dirname,
+    `.${pathname}`
+  );
+
+  const root = path.resolve(__dirname);
+
+  if (
+    filePath !== root &&
+    !filePath.startsWith(`${root}${path.sep}`)
+  ) {
+    return null;
+  }
+
+  return filePath;
+}
+
+function serveStatic(req, res) {
+  const filePath = safeStaticPath(req);
+
+  if (!filePath) {
+    sendText(res, 403, 'Acesso negado.');
+    return;
+  }
+
+  if (!fs.existsSync(filePath)) {
+    sendText(res, 404, 'Página não encontrada.');
+    return;
+  }
+
+  const stat = fs.statSync(filePath);
+
+  if (!stat.isFile()) {
+    sendText(res, 404, 'Página não encontrada.');
+    return;
+  }
+
+  const ext = path.extname(filePath).toLowerCase();
+
+  const mimeType =
+    mimeTypes[ext] ||
+    'application/octet-stream';
+
+  res.writeHead(200, {
+    'Content-Type': mimeType
+  });
+
+  fs.createReadStream(filePath).pipe(res);
+}
+
+/* =========================================================
+   SERVIDOR
+========================================================= */
+
+const server = http.createServer(
+  async (req, res) => {
+    try {
+      const pathname = routePath(req);
+
+      if (pathname.startsWith('/api/')) {
+        const handled =
+          await handleApi(req, res);
+
+        if (!handled) {
+          sendJson(res, 404, {
+            ok: false,
+            error: 'API não encontrada.'
+          });
+        }
+
+        return;
+      }
+
+      if (
+        req.method !== 'GET' &&
+        req.method !== 'HEAD'
+      ) {
+        sendText(
+          res,
+          405,
+          'Método não permitido.'
+        );
+
+        return;
+      }
+
+      serveStatic(req, res);
+
+    } catch (error) {
+      console.error(
+        'Erro interno:',
+        error
+      );
+
+      if (!res.headersSent) {
+        sendJson(res, 500, {
+          ok: false,
+          error: 'Erro interno do servidor.'
+        });
+      } else {
+        res.end();
+      }
+    }
+  }
+);
+
+server.listen(
+  PORT,
+  () => {
+    console.log(
+      `🚀 Império GamePlay rodando na porta ${PORT}`
     );
 
-    process.exit(1);
+    console.log(
+      `🌐 URL pública: ${PUBLIC_URL}`
+    );
+
+    console.log(
+      `☁️ Banco: Supabase`
+    );
+
+    console.log(
+      `💳 Pagamento: InfinitePay`
+    );
   }
 );
