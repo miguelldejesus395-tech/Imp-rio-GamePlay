@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>👑 Império GamePlay — Minha Conta</title>
+  <title>Império GamePlay — Administração</title>
 
   <style>
     * {
@@ -14,104 +13,98 @@
     }
 
     :root {
-      --bg: #050712;
-      --panel: rgba(12, 17, 34, .88);
-      --panel2: rgba(18, 24, 47, .92);
-      --border: rgba(139, 92, 246, .22);
-      --blue: #3b82f6;
-      --purple: #8b5cf6;
-      --pink: #ec4899;
-      --cyan: #22d3ee;
-      --green: #22c55e;
-      --yellow: #facc15;
-      --red: #ef4444;
-      --text: #f8fafc;
-      --muted: #94a3b8;
+      --bg: #070812;
+      --panel: #101323;
+      --panel2: #15192b;
+      --border: rgba(255,255,255,.09);
+      --text: #f5f7ff;
+      --muted: #9299b5;
+      --blue: #4f8cff;
+      --purple: #9b5cff;
+      --pink: #ff4fd8;
+      --green: #32e59b;
+      --yellow: #ffc857;
+      --red: #ff5c6c;
     }
 
     body {
       min-height: 100vh;
-      color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
       background:
-        radial-gradient(circle at 10% 0%, rgba(37,99,235,.18), transparent 28%),
-        radial-gradient(circle at 90% 10%, rgba(139,92,246,.16), transparent 28%),
-        radial-gradient(circle at 60% 100%, rgba(236,72,153,.10), transparent 32%),
+        radial-gradient(circle at 10% 10%, rgba(79,140,255,.16), transparent 30%),
+        radial-gradient(circle at 90% 15%, rgba(155,92,255,.14), transparent 28%),
+        radial-gradient(circle at 50% 100%, rgba(255,79,216,.08), transparent 30%),
         var(--bg);
-      overflow-x: hidden;
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(255,255,255,.014) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.014) 1px, transparent 1px);
-      background-size: 42px 42px;
+    button,
+    input,
+    select {
+      font: inherit;
     }
 
     button {
-      font-family: inherit;
+      cursor: pointer;
     }
 
     .app {
-      min-height: 100vh;
       display: flex;
+      min-height: 100vh;
     }
 
-    /* =========================
-       SIDEBAR
-    ========================= */
+    /* SIDEBAR */
 
     .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 250px;
-      z-index: 20;
+      width: 260px;
+      min-width: 260px;
       padding: 22px 16px;
-      background: rgba(6, 9, 21, .94);
-      border-right: 1px solid rgba(139,92,246,.16);
+      background: rgba(9,11,22,.94);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 50;
       backdrop-filter: blur(20px);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 11px;
-      padding: 10px 9px 25px;
-      font-size: 18px;
-      font-weight: 900;
+      gap: 12px;
+      padding: 8px 10px 25px;
     }
 
     .brand-icon {
-      width: 42px;
-      height: 42px;
+      width: 46px;
+      height: 46px;
       display: grid;
       place-items: center;
-      border-radius: 13px;
-      background: linear-gradient(135deg, #2563eb, #7c3aed, #db2777);
-      box-shadow: 0 8px 30px rgba(124,58,237,.32);
-      font-size: 21px;
+      border-radius: 15px;
+      font-size: 23px;
+      background: linear-gradient(135deg, var(--blue), var(--purple), var(--pink));
+      box-shadow: 0 0 30px rgba(110,90,255,.3);
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 15px;
+      letter-spacing: .4px;
     }
 
     .brand span {
-      background: linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
     }
 
-    .nav-title {
-      padding: 10px 12px;
-      color: #64748b;
+    .menu-title {
+      padding: 15px 12px 8px;
+      color: #626a88;
       font-size: 10px;
       font-weight: 800;
-      letter-spacing: 1.5px;
       text-transform: uppercase;
+      letter-spacing: 1.5px;
     }
 
     .nav {
@@ -121,29 +114,23 @@
 
     .nav button {
       width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #aeb5d0;
+      border-radius: 12px;
+      padding: 12px 13px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 13px 13px;
-      border: 1px solid transparent;
-      border-radius: 12px;
-      background: transparent;
-      color: #94a3b8;
-      cursor: pointer;
+      gap: 11px;
       text-align: left;
-      font-size: 14px;
       transition: .2s;
     }
 
     .nav button:hover,
     .nav button.active {
-      color: white;
-      background: linear-gradient(
-        90deg,
-        rgba(59,130,246,.14),
-        rgba(139,92,246,.12)
-      );
-      border-color: rgba(139,92,246,.18);
+      color: #fff;
+      background: linear-gradient(90deg, rgba(79,140,255,.15), rgba(155,92,255,.09));
+      border-color: rgba(110,130,255,.15);
     }
 
     .nav-icon {
@@ -156,176 +143,146 @@
       position: absolute;
       left: 16px;
       right: 16px;
-      bottom: 18px;
+      bottom: 20px;
+    }
+
+    .admin-user {
+      padding: 13px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.035);
+      border: 1px solid var(--border);
+      margin-bottom: 9px;
+    }
+
+    .admin-user small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .admin-user strong {
+      font-size: 13px;
     }
 
     .logout {
       width: 100%;
-      padding: 12px;
-      border: 1px solid rgba(239,68,68,.18);
+      border: 1px solid rgba(255,92,108,.2);
+      background: rgba(255,92,108,.06);
+      color: #ff8490;
+      padding: 11px;
       border-radius: 12px;
-      background: rgba(239,68,68,.07);
-      color: #fca5a5;
-      cursor: pointer;
+      font-weight: 700;
     }
 
-    /* =========================
-       MAIN
-    ========================= */
+    /* MAIN */
 
     .main {
-      width: calc(100% - 250px);
-      margin-left: 250px;
-      min-height: 100vh;
-      padding: 25px;
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      min-width: 0;
+      padding: 24px;
     }
 
     .topbar {
-      min-height: 70px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 25px;
-      padding: 15px 20px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(10,14,29,.75);
-      backdrop-filter: blur(16px);
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 24px;
     }
 
-    .mobile-menu {
-      display: none;
-      border: 0;
-      background: transparent;
-      color: white;
-      font-size: 24px;
-      cursor: pointer;
+    .topbar h1 {
+      font-size: clamp(22px, 3vw, 31px);
+      margin-bottom: 5px;
     }
 
-    .top-title h1 {
-      font-size: 22px;
-      margin-bottom: 4px;
-    }
-
-    .top-title p {
+    .topbar p {
       color: var(--muted);
       font-size: 13px;
     }
 
-    .profile {
+    .status {
       display: flex;
       align-items: center;
-      gap: 11px;
+      gap: 8px;
+      padding: 10px 13px;
+      border: 1px solid rgba(50,229,155,.18);
+      background: rgba(50,229,155,.06);
+      border-radius: 12px;
+      color: #75efbe;
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    .avatar {
-      width: 42px;
-      height: 42px;
-      display: grid;
-      place-items: center;
+    .status-dot {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background: linear-gradient(135deg,#2563eb,#8b5cf6);
-      font-weight: 900;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
     }
 
-    .profile-info strong {
-      display: block;
-      font-size: 13px;
-    }
+    /* PAGES */
 
-    .profile-info small {
-      color: #64748b;
-      font-size: 11px;
-    }
-
-    /* =========================
-       SECTIONS
-    ========================= */
-
-    .section {
+    .page {
       display: none;
     }
 
-    .section.active {
+    .page.active {
       display: block;
     }
 
-    .hero-card {
-      position: relative;
-      overflow: hidden;
-      padding: 30px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(59,130,246,.2);
-      border-radius: 22px;
-      background:
-        radial-gradient(circle at 85% 20%, rgba(139,92,246,.22), transparent 30%),
-        radial-gradient(circle at 10% 100%, rgba(37,99,235,.17), transparent 30%),
-        linear-gradient(135deg,rgba(17,25,55,.95),rgba(8,12,27,.95));
-      box-shadow: 0 20px 70px rgba(0,0,0,.28);
-    }
-
-    .hero-card::after {
-      content: "☁";
-      position: absolute;
-      right: 50px;
-      top: 25px;
-      font-size: 110px;
-      opacity: .06;
-    }
-
-    .hero-card h2 {
-      font-size: clamp(25px, 3vw, 38px);
-      margin-bottom: 9px;
-    }
-
-    .hero-card h2 span {
-      background: linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .hero-card p {
-      color: var(--muted);
-      line-height: 1.6;
-      max-width: 680px;
-    }
-
-    /* =========================
-       STATS
-    ========================= */
+    /* STATS */
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(4,1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 15px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
     .stat {
+      position: relative;
+      overflow: hidden;
       padding: 20px;
       border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(18,22,40,.95), rgba(10,12,25,.95));
       border-radius: 18px;
-      background: var(--panel);
-      box-shadow: 0 15px 45px rgba(0,0,0,.18);
     }
 
-    .stat-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
+    .stat::after {
+      content: "";
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      right: -40px;
+      top: -45px;
+      border-radius: 50%;
+      background: rgba(79,140,255,.13);
+      filter: blur(15px);
     }
 
     .stat-icon {
-      width: 40px;
-      height: 40px;
+      width: 39px;
+      height: 39px;
       display: grid;
       place-items: center;
-      border-radius: 12px;
-      background: rgba(59,130,246,.13);
+      border-radius: 11px;
+      background: rgba(79,140,255,.12);
+      margin-bottom: 14px;
       font-size: 18px;
+    }
+
+    .stat:nth-child(2) .stat-icon {
+      background: rgba(50,229,155,.1);
+    }
+
+    .stat:nth-child(3) .stat-icon {
+      background: rgba(255,200,87,.1);
+    }
+
+    .stat:nth-child(4) .stat-icon {
+      background: rgba(255,79,216,.1);
     }
 
     .stat small {
@@ -336,360 +293,499 @@
     .stat strong {
       display: block;
       margin-top: 6px;
-      font-size: 24px;
+      font-size: 25px;
     }
 
-    .green {
-      color: #4ade80;
+    /* CARDS */
+
+    .card {
+      background: rgba(14,17,31,.88);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.12);
     }
 
-    .blue {
-      color: #60a5fa;
-    }
-
-    .purple {
-      color: #c4b5fd;
-    }
-
-    .yellow {
-      color: #fde047;
-    }
-
-    /* =========================
-       GRID / CARDS
-    ========================= */
-
-    .section-head {
+    .card-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 15px;
-      margin: 25px 0 15px;
+      gap: 12px;
+      margin-bottom: 18px;
     }
 
-    .section-head h2 {
-      font-size: 20px;
+    .card-head h2 {
+      font-size: 17px;
     }
 
-    .section-head p {
+    .card-head p {
       color: var(--muted);
       font-size: 12px;
       margin-top: 4px;
     }
 
+    /* BUTTONS */
+
+    .btn {
+      border: 0;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-weight: 800;
+      color: white;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 8px 25px rgba(79,140,255,.16);
+    }
+
+    .btn:hover {
+      filter: brightness(1.1);
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, #16c98a, #35e5a1);
+      color: #06150f;
+    }
+
+    .btn-red {
+      background: rgba(255,92,108,.1);
+      color: #ff7f8a;
+      border: 1px solid rgba(255,92,108,.2);
+      box-shadow: none;
+    }
+
+    .btn-yellow {
+      background: linear-gradient(135deg, #ffb52e, #ffd35c);
+      color: #211600;
+    }
+
+    .btn-small {
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+
+    /* FORM */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 13px;
+    }
+
+    .form-grid.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: #aeb5d0;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      outline: none;
+      background: #0a0d19;
+      color: white;
+      border-radius: 10px;
+      padding: 11px 12px;
+    }
+
+    .field textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(79,140,255,.5);
+      box-shadow: 0 0 0 3px rgba(79,140,255,.08);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    /* TABLE */
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      color: #747c9b;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      padding: 11px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 13px 11px;
+      border-bottom: 1px solid rgba(255,255,255,.055);
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255,255,255,.015);
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      font-weight: 900;
+    }
+
+    .user-cell strong {
+      display: block;
+    }
+
+    .user-cell span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 5px 8px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .badge-green {
+      background: rgba(50,229,155,.1);
+      color: #67eeb6;
+    }
+
+    .badge-red {
+      background: rgba(255,92,108,.1);
+      color: #ff7d88;
+    }
+
+    .badge-yellow {
+      background: rgba(255,200,87,.1);
+      color: #ffd66e;
+    }
+
+    .badge-blue {
+      background: rgba(79,140,255,.1);
+      color: #76a7ff;
+    }
+
+    /* PACKAGES */
+
     .packages-grid {
       display: grid;
-      grid-template-columns: repeat(4,1fr);
-      gap: 16px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
     }
 
     .package-card {
-      position: relative;
-      overflow: hidden;
-      padding: 22px;
+      padding: 18px;
+      border-radius: 16px;
       border: 1px solid var(--border);
-      border-radius: 19px;
-      background:
-        linear-gradient(145deg,rgba(20,27,53,.95),rgba(10,14,29,.95));
-      transition: .22s;
+      background: linear-gradient(150deg, #13182a, #0c0f1c);
     }
 
-    .package-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(139,92,246,.5);
-      box-shadow: 0 20px 50px rgba(0,0,0,.3);
-    }
-
-    .package-card::before {
-      content: "";
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      right: -50px;
-      top: -50px;
-      border-radius: 50%;
-      background: rgba(139,92,246,.12);
-      filter: blur(5px);
-    }
-
-    .package-name {
-      font-size: 18px;
-      font-weight: 900;
-      margin-bottom: 12px;
+    .package-card h3 {
+      margin-bottom: 6px;
     }
 
     .package-price {
-      font-size: 29px;
+      font-size: 24px;
       font-weight: 900;
-      margin-bottom: 4px;
+      margin: 10px 0;
     }
 
     .package-minutes {
-      color: #60a5fa;
+      color: #71a5ff;
       font-weight: 800;
-      margin-bottom: 14px;
+      font-size: 12px;
     }
 
     .package-description {
-      min-height: 42px;
       color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-      margin-bottom: 18px;
+      font-size: 11px;
+      min-height: 34px;
+      margin: 9px 0 14px;
     }
 
-    .btn-buy {
-      width: 100%;
-      padding: 12px;
-      border: 0;
-      border-radius: 11px;
-      background: linear-gradient(100deg,#2563eb,#7c3aed,#db2777);
-      color: white;
-      cursor: pointer;
-      font-weight: 900;
-      box-shadow: 0 8px 25px rgba(124,58,237,.22);
-    }
+    /* TOGGLE */
 
-    .btn-buy:hover {
-      transform: translateY(-1px);
-    }
-
-    /* =========================
-       FIVEM
-    ========================= */
-
-    .fivem-card {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 25px;
-      align-items: center;
-      padding: 25px;
-      border: 1px solid rgba(34,211,238,.2);
-      border-radius: 20px;
-      background:
-        radial-gradient(circle at 90% 50%,rgba(34,211,238,.10),transparent 30%),
-        var(--panel);
-    }
-
-    .fivem-title {
+    .toggle-row {
       display: flex;
       align-items: center;
-      gap: 13px;
-      margin-bottom: 9px;
+      justify-content: space-between;
+      padding: 13px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      gap: 15px;
     }
 
-    .fivem-icon {
-      width: 48px;
-      height: 48px;
-      display: grid;
-      place-items: center;
-      border-radius: 14px;
-      background: rgba(34,211,238,.1);
-      border: 1px solid rgba(34,211,238,.2);
-      font-size: 22px;
+    .toggle-row:last-child {
+      border-bottom: 0;
     }
 
-    .fivem-card h3 {
-      font-size: 20px;
-    }
-
-    .fivem-card p {
-      color: var(--muted);
-      line-height: 1.5;
+    .toggle-row strong {
+      display: block;
       font-size: 13px;
     }
 
-    .btn-start {
-      min-width: 190px;
-      padding: 14px 20px;
-      border: 0;
-      border-radius: 12px;
-      background: linear-gradient(100deg,#06b6d4,#2563eb);
-      color: white;
-      cursor: pointer;
-      font-weight: 900;
-      box-shadow: 0 10px 30px rgba(6,182,212,.2);
+    .toggle-row small {
+      color: var(--muted);
+      display: block;
+      margin-top: 3px;
+      font-size: 10px;
     }
 
-    /* =========================
-       PEDIDOS
-    ========================= */
-
-    .orders {
-      display: grid;
-      gap: 10px;
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      flex-shrink: 0;
     }
 
-    .order {
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      align-items: center;
-      gap: 15px;
+    .switch input {
+      display: none;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 99px;
+      background: #282d40;
+      transition: .2s;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: #9299b5;
+      transition: .2s;
+    }
+
+    .switch input:checked + .slider {
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(22px);
+      background: white;
+    }
+
+    /* PAYMENT */
+
+    .payment-box {
       padding: 17px;
-      border: 1px solid rgba(148,163,184,.10);
-      border-radius: 14px;
-      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(50,229,155,.14);
+      background: rgba(50,229,155,.035);
+      border-radius: 15px;
+      margin-bottom: 18px;
     }
 
-    .order strong {
+    .payment-box strong {
       display: block;
       margin-bottom: 5px;
     }
 
-    .order small {
+    .payment-box span {
       color: var(--muted);
-    }
-
-    .status {
-      padding: 7px 10px;
-      border-radius: 20px;
       font-size: 11px;
-      font-weight: 900;
     }
 
-    .status-pago {
-      color: #86efac;
-      background: rgba(34,197,94,.10);
+    .handle {
+      margin-top: 10px;
+      color: #75efbe;
+      font-weight: 800;
     }
 
-    .status-pendente {
-      color: #fde68a;
-      background: rgba(234,179,8,.10);
-    }
+    /* SEARCH */
 
-    .status-cancelado {
-      color: #fca5a5;
-      background: rgba(239,68,68,.10);
-    }
-
-    /* =========================
-       PROFILE
-    ========================= */
-
-    .profile-card {
-      max-width: 750px;
-      padding: 25px;
+    .search {
+      width: 100%;
+      max-width: 300px;
+      background: #0a0d19;
       border: 1px solid var(--border);
-      border-radius: 20px;
-      background: var(--panel);
+      color: white;
+      padding: 10px 12px;
+      border-radius: 10px;
+      outline: none;
     }
 
-    .profile-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      padding: 16px 0;
-      border-bottom: 1px solid rgba(255,255,255,.06);
+    .search:focus {
+      border-color: rgba(79,140,255,.45);
     }
 
-    .profile-row:last-child {
-      border-bottom: 0;
-    }
+    /* EMPTY */
 
-    .profile-row span {
+    .empty {
+      text-align: center;
       color: var(--muted);
+      padding: 30px;
       font-size: 13px;
     }
 
-    .profile-row strong {
-      font-size: 14px;
-    }
+    /* TOAST */
 
-    .empty {
-      padding: 35px;
-      text-align: center;
-      border: 1px dashed rgba(148,163,184,.16);
-      border-radius: 17px;
-      color: var(--muted);
-    }
-
-    /* =========================
-       TOAST
-    ========================= */
-
-    #toast {
+    #message {
       position: fixed;
       right: 20px;
       bottom: 20px;
-      z-index: 100;
+      z-index: 200;
       max-width: 360px;
-      padding: 14px 17px;
-      border: 1px solid rgba(139,92,246,.3);
-      border-radius: 13px;
-      background: rgba(10,14,29,.96);
-      color: white;
-      box-shadow: 0 20px 60px rgba(0,0,0,.4);
-      transform: translateY(120px);
-      opacity: 0;
-      transition: .25s;
+      padding: 13px 16px;
+      border-radius: 12px;
+      background: #171c30;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+      display: none;
+      font-size: 12px;
     }
 
-    #toast.show {
-      transform: translateY(0);
-      opacity: 1;
+    #message.show {
+      display: block;
     }
 
-    /* =========================
-       MOBILE
-    ========================= */
+    #message.error {
+      border-color: rgba(255,92,108,.3);
+      color: #ff9ba4;
+    }
 
-    @media (max-width: 1150px) {
-      .packages-grid {
-        grid-template-columns: repeat(2,1fr);
-      }
+    #message.success {
+      border-color: rgba(50,229,155,.3);
+      color: #7af0bd;
+    }
 
+    /* MOBILE */
+
+    .mobile-top {
+      display: none;
+    }
+
+    @media (max-width: 1050px) {
       .stats {
-        grid-template-columns: repeat(2,1fr);
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .packages-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
-    @media (max-width: 800px) {
+    @media (max-width: 760px) {
       .sidebar {
-        transform: translateX(-100%);
-        transition: .25s;
-        box-shadow: 20px 0 60px rgba(0,0,0,.5);
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .main {
-        width: 100%;
-        margin-left: 0;
-        padding: 14px;
-      }
-
-      .mobile-menu {
-        display: block;
-      }
-
-      .topbar {
-        padding: 12px 15px;
-      }
-
-      .top-title h1 {
-        font-size: 18px;
-      }
-
-      .profile-info {
         display: none;
       }
 
-      .fivem-card {
-        grid-template-columns: 1fr;
-      }
-
-      .btn-start {
+      .main {
+        margin-left: 0;
         width: 100%;
+        padding: 15px;
+        padding-top: 75px;
       }
-    }
 
-    @media (max-width: 560px) {
+      .mobile-top {
+        position: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        z-index: 100;
+        padding: 10px 14px;
+        background: rgba(7,8,18,.94);
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(20px);
+      }
+
+      .mobile-top strong {
+        font-size: 13px;
+      }
+
+      .mobile-menu {
+        position: fixed;
+        display: none;
+        z-index: 99;
+        top: 60px;
+        left: 10px;
+        right: 10px;
+        padding: 10px;
+        border: 1px solid var(--border);
+        background: #0c0f1c;
+        border-radius: 15px;
+      }
+
+      .mobile-menu.open {
+        display: grid;
+      }
+
+      .mobile-menu button {
+        border: 0;
+        background: transparent;
+        color: #bdc3db;
+        text-align: left;
+        padding: 12px;
+        border-radius: 10px;
+      }
+
+      .mobile-menu button:hover {
+        background: rgba(79,140,255,.1);
+        color: white;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .status {
+        display: none;
+      }
+
       .stats {
-        grid-template-columns: 1fr 1fr;
-        gap: 9px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
       }
 
       .stat {
@@ -697,1177 +793,242 @@
       }
 
       .stat strong {
-        font-size: 19px;
+        font-size: 20px;
+      }
+
+      .form-grid,
+      .form-grid.three {
+        grid-template-columns: 1fr;
       }
 
       .packages-grid {
         grid-template-columns: 1fr;
       }
 
-      .hero-card {
-        padding: 23px;
+      .card {
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .stats {
+        grid-template-columns: 1fr 1fr;
       }
 
-      .hero-card h2 {
-        font-size: 25px;
+      .stat small {
+        font-size: 10px;
       }
 
-      .order {
-        grid-template-columns: 1fr;
-      }
-
-      .section-head {
-        align-items: flex-start;
+      .stat strong {
+        font-size: 18px;
       }
     }
   </style>
 </head>
 
-<body>
+<body data-page="admin">
 
-<div class="app">
+  <div id="message"></div>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
+  <!-- MOBILE HEADER -->
+  <div class="mobile-top">
+    <strong>👑 IMPÉRIO ADMIN</strong>
+    <button class="btn btn-small" onclick="toggleMobileMenu()">☰</button>
+  </div>
 
-    <div class="brand">
-      <div class="brand-icon">👑</div>
-      <div>
-        <span>IMPÉRIO</span>
-        <small style="display:block;color:#64748b;font-size:9px;letter-spacing:1px;">
-          GAMEPLAY
-        </small>
+  <div class="mobile-menu" id="mobileMenu">
+    <button onclick="showAdminPage('dashboard')">📊 Dashboard</button>
+    <button onclick="showAdminPage('usuarios')">👥 Usuários</button>
+    <button onclick="showAdminPage('pacotes')">📦 Pacotes</button>
+    <button onclick="showAdminPage('pedidos')">🧾 Pedidos</button>
+    <button onclick="showAdminPage('pagamento')">💳 InfinitePay</button>
+    <button onclick="showAdminPage('config')">⚙️ Configurações</button>
+    <button onclick="logout()">🚪 Sair</button>
+  </div>
+
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="brand">
+        <div class="brand-icon">👑</div>
+        <div>
+          <strong>IMPÉRIO GAMEPLAY</strong>
+          <span>Central administrativa</span>
+        </div>
       </div>
-    </div>
 
-    <div class="nav-title">Menu principal</div>
+      <div class="menu-title">Principal</div>
 
-    <nav class="nav">
-
-      <button
-        class="active"
-        data-section="dashboard"
-        onclick="abrirSecao('dashboard', this)"
-      >
-        <span class="nav-icon">🏠</span>
-        Dashboard
-      </button>
-
-      <button
-        data-section="loja"
-        onclick="abrirSecao('loja', this)"
-      >
-        <span class="nav-icon">🛒</span>
-        Comprar minutos
-      </button>
-
-      <button
-        data-section="fivem"
-        onclick="abrirSecao('fivem', this)"
-      >
-        <span class="nav-icon">🎮</span>
-        FiveM
-      </button>
-
-      <button
-        data-section="pedidos"
-        onclick="abrirSecao('pedidos', this)"
-      >
-        <span class="nav-icon">📦</span>
-        Meus pedidos
-      </button>
-
-      <button
-        data-section="perfil"
-        onclick="abrirSecao('perfil', this)"
-      >
-        <span class="nav-icon">👤</span>
-        Minha conta
-      </button>
-
-    </nav>
-
-    <div class="sidebar-bottom">
-      <button class="logout" onclick="logout()">
-        🚪 Sair da conta
-      </button>
-    </div>
-
-  </aside>
-
-
-  <!-- MAIN -->
-  <main class="main">
-
-    <!-- TOPBAR -->
-    <header class="topbar">
-
-      <div style="display:flex;align-items:center;gap:12px;">
-
-        <button
-          class="mobile-menu"
-          onclick="toggleSidebar()"
-        >
-          ☰
+      <nav class="nav">
+        <button class="active" data-page="dashboard" onclick="showAdminPage('dashboard')">
+          <span class="nav-icon">📊</span>
+          Dashboard
         </button>
 
-        <div class="top-title">
-          <h1>Central do jogador</h1>
-          <p>Seu espaço no Império GamePlay</p>
+        <button data-page="usuarios" onclick="showAdminPage('usuarios')">
+          <span class="nav-icon">👥</span>
+          Usuários
+        </button>
+
+        <button data-page="pacotes" onclick="showAdminPage('pacotes')">
+          <span class="nav-icon">📦</span>
+          Pacotes
+        </button>
+
+        <button data-page="pedidos" onclick="showAdminPage('pedidos')">
+          <span class="nav-icon">🧾</span>
+          Pedidos
+        </button>
+      </nav>
+
+      <div class="menu-title">Sistema</div>
+
+      <nav class="nav">
+        <button data-page="pagamento" onclick="showAdminPage('pagamento')">
+          <span class="nav-icon">💳</span>
+          InfinitePay
+        </button>
+
+        <button data-page="config" onclick="showAdminPage('config')">
+          <span class="nav-icon">⚙️</span>
+          Configurações
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+
+        <div class="admin-user">
+          <small>Administrador</small>
+          <strong>👑 Painel Master</strong>
         </div>
+
+        <button class="logout" onclick="logout()">
+          🚪 Sair do painel
+        </button>
 
       </div>
+    </aside>
 
-      <div class="profile">
+    <!-- MAIN -->
+    <main class="main">
 
-        <div class="profile-info">
-          <strong id="userName">Carregando...</strong>
-          <small id="userPlan">Nenhum plano</small>
-        </div>
-
-        <div class="avatar" id="avatar">
-          👤
-        </div>
-
-      </div>
-
-    </header>
-
-
-    <!-- =========================
-         DASHBOARD
-    ========================= -->
-
-    <section
-      id="dashboard"
-      class="section active"
-    >
-
-      <div class="hero-card">
-
-        <h2>
-          Bem-vindo,
-          <span id="welcomeName">Jogador</span> 👑
-        </h2>
-
-        <p>
-          Gerencie seus minutos, compre novos pacotes
-          e acesse seu ambiente de cloud gaming.
-        </p>
-
-      </div>
-
-
-      <div class="stats">
-
-        <div class="stat">
-
-          <div class="stat-top">
-            <small>Minutos disponíveis</small>
-            <div class="stat-icon">⏱️</div>
-          </div>
-
-          <strong
-            id="minutes"
-            class="blue"
-          >
-            0m
-          </strong>
-
-        </div>
-
-
-        <div class="stat">
-
-          <div class="stat-top">
-            <small>Plano atual</small>
-            <div class="stat-icon">👑</div>
-          </div>
-
-          <strong
-            id="plan"
-            class="purple"
-          >
-            Nenhum
-          </strong>
-
-        </div>
-
-
-        <div class="stat">
-
-          <div class="stat-top">
-            <small>Status</small>
-            <div class="stat-icon">🟢</div>
-          </div>
-
-          <strong class="green">
-            Online
-          </strong>
-
-        </div>
-
-
-        <div class="stat">
-
-          <div class="stat-top">
-            <small>Cloud Gaming</small>
-            <div class="stat-icon">☁️</div>
-          </div>
-
-          <strong class="yellow">
-            Ativo
-          </strong>
-
-        </div>
-
-      </div>
-
-
-      <div class="section-head">
+      <header class="topbar">
         <div>
-          <h2>🎮 FiveM Cloud</h2>
-          <p>Entre no seu servidor quando estiver pronto.</p>
-        </div>
-      </div>
-
-      <div class="fivem-card">
-
-        <div>
-
-          <div class="fivem-title">
-
-            <div class="fivem-icon">
-              🎮
-            </div>
-
-            <div>
-              <h3>Império FiveM</h3>
-              <span style="color:#4ade80;font-size:11px;">
-                ● Sistema disponível
-              </span>
-            </div>
-
-          </div>
-
-          <p>
-            Use seus minutos para iniciar sua sessão
-            de cloud gaming e jogar FiveM.
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageDescription">
+            Visão geral do seu GameCloud.
           </p>
+        </div>
+
+        <div class="status">
+          <span class="status-dot"></span>
+          Sistema online
+        </div>
+      </header>
+
+
+      <!-- ================= DASHBOARD ================= -->
+
+      <section class="page active" id="dashboard">
+
+        <div class="stats">
+
+          <div class="stat">
+            <div class="stat-icon">👥</div>
+            <small>Total de usuários</small>
+            <strong id="totalUsers">0</strong>
+          </div>
+
+          <div class="stat">
+            <div class="stat-icon">🎮</div>
+            <small>Servidores ativos</small>
+            <strong id="activeServers">0</strong>
+          </div>
+
+          <div class="stat">
+            <div class="stat-icon">🧾</div>
+            <small>Pedidos</small>
+            <strong id="orders">0</strong>
+          </div>
+
+          <div class="stat">
+            <div class="stat-icon">💰</div>
+            <small>Vendas</small>
+            <strong id="sales">R$ 0,00</strong>
+          </div>
 
         </div>
 
-        <button
-          class="btn-start"
-          onclick="abrirSecao('fivem')"
-        >
-          🚀 Iniciar FiveM
-        </button>
 
-      </div>
+        <div class="card">
 
-
-      <div class="section-head">
-        <div>
-          <h2>🛒 Pacotes disponíveis</h2>
-          <p>Escolha a quantidade de minutos que deseja comprar.</p>
-        </div>
-      </div>
-
-      <div
-        id="packagesGrid"
-        class="packages-grid"
-      >
-        <div class="empty">
-          Carregando pacotes...
-        </div>
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         LOJA
-    ========================= -->
-
-    <section
-      id="loja"
-      class="section"
-    >
-
-      <div class="hero-card">
-
-        <h2>
-          🛒 Loja de <span>minutos</span>
-        </h2>
-
-        <p>
-          Escolha um pacote e prossiga para o pagamento.
-          Após a confirmação, os minutos serão adicionados
-          à sua conta.
-        </p>
-
-      </div>
-
-      <div
-        id="storePackages"
-        class="packages-grid"
-      >
-        <div class="empty">
-          Carregando loja...
-        </div>
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         FIVEM
-    ========================= -->
-
-    <section
-      id="fivem"
-      class="section"
-    >
-
-      <div class="hero-card">
-
-        <h2>
-          🎮 <span>FiveM Cloud Gaming</span>
-        </h2>
-
-        <p>
-          Sua sessão será autorizada de acordo com
-          o saldo de minutos disponível.
-        </p>
-
-      </div>
-
-      <div class="fivem-card">
-
-        <div>
-
-          <div class="fivem-title">
-
-            <div class="fivem-icon">
-              🕹️
-            </div>
-
+          <div class="card-head">
             <div>
-              <h3>Servidor FiveM</h3>
-              <span
-                id="fivemStatus"
-                style="color:#4ade80;font-size:11px;"
-              >
-                ● Pronto
-              </span>
+              <h2>⚡ Ações rápidas</h2>
+              <p>Acesse rapidamente as funções administrativas.</p>
             </div>
-
           </div>
 
-          <p>
-            Quando a integração de streaming estiver
-            conectada, este botão iniciará sua sessão
-            de jogo através do GameCloud.
-          </p>
+          <div class="actions">
+            <button class="btn" onclick="showAdminPage('usuarios')">
+              👥 Gerenciar usuários
+            </button>
 
-          <div
-            style="
-              display:flex;
-              gap:10px;
-              flex-wrap:wrap;
-              margin-top:18px;
-            "
-          >
+            <button class="btn" onclick="showAdminPage('pacotes')">
+              📦 Gerenciar pacotes
+            </button>
 
-            <span class="feature">
-              ☁️ Cloud
-            </span>
+            <button class="btn btn-green" onclick="showAdminPage('pagamento')">
+              💳 Configurar InfinitePay
+            </button>
 
-            <span class="feature">
-              🎮 FiveM
-            </span>
-
-            <span class="feature">
-              ⏱️ Minutos
-            </span>
-
-            <span class="feature">
-              🔐 Sessão segura
-            </span>
-
+            <button class="btn btn-yellow" onclick="atualizarTudo()">
+              🔄 Atualizar dados
+            </button>
           </div>
 
         </div>
 
-        <button
-          class="btn-start"
-          id="startFiveM"
-          onclick="iniciarFiveM()"
-        >
-          🚀 Iniciar FiveM
-        </button>
 
-      </div>
+        <div class="card">
 
-    </section>
-
-
-    <!-- =========================
-         PEDIDOS
-    ========================= -->
-
-    <section
-      id="pedidos"
-      class="section"
-    >
-
-      <div class="hero-card">
-
-        <h2>
-          📦 Meus <span>pedidos</span>
-        </h2>
-
-        <p>
-          Veja o histórico das suas compras e o status
-          dos pagamentos.
-        </p>
-
-      </div>
-
-      <div
-        id="ordersList"
-        class="orders"
-      >
-        <div class="empty">
-          Carregando pedidos...
-        </div>
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         PERFIL
-    ========================= -->
-
-    <section
-      id="perfil"
-      class="section"
-    >
-
-      <div class="hero-card">
-
-        <h2>
-          👤 Minha <span>conta</span>
-        </h2>
-
-        <p>
-          Consulte os dados da sua conta no Império GamePlay.
-        </p>
-
-      </div>
-
-      <div class="profile-card">
-
-        <div class="profile-row">
-          <span>Usuário</span>
-          <strong id="profileUsername">—</strong>
-        </div>
-
-        <div class="profile-row">
-          <span>E-mail</span>
-          <strong id="profileEmail">—</strong>
-        </div>
-
-        <div class="profile-row">
-          <span>Plano</span>
-          <strong id="profilePlan">—</strong>
-        </div>
-
-        <div class="profile-row">
-          <span>Minutos disponíveis</span>
-          <strong
-            id="profileMinutes"
-            class="blue"
-          >
-            0m
-          </strong>
-        </div>
-
-        <div class="profile-row">
-          <span>Status</span>
-          <strong class="green">
-            Conta ativa
-          </strong>
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-</div>
-
-
-<div id="toast"></div>
-
-
-<script src="app.js"></script>
-
-<script>
-
-  let usuarioAtual = null;
-  let pacotesAtuais = [];
-  let pedidosAtuais = [];
-
-  /* =========================
-     NAVEGAÇÃO
-  ========================= */
-
-  function abrirSecao(id, botao) {
-
-    document.querySelectorAll('.section')
-      .forEach(section => {
-        section.classList.remove('active');
-      });
-
-    const section = document.getElementById(id);
-
-    if (section) {
-      section.classList.add('active');
-    }
-
-    document.querySelectorAll('.nav button')
-      .forEach(button => {
-        button.classList.remove('active');
-      });
-
-    if (botao) {
-      botao.classList.add('active');
-    } else {
-      const navButton =
-        document.querySelector(
-          `.nav button[data-section="${id}"]`
-        );
-
-      if (navButton) {
-        navButton.classList.add('active');
-      }
-    }
-
-    document.getElementById('sidebar')
-      ?.classList.remove('open');
-
-    if (id === 'pedidos') {
-      carregarPedidosTela();
-    }
-
-    if (id === 'loja') {
-      renderizarLoja();
-    }
-
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  }
-
-
-  function toggleSidebar() {
-    document
-      .getElementById('sidebar')
-      ?.classList.toggle('open');
-  }
-
-
-  /* =========================
-     TOAST
-  ========================= */
-
-  function toast(text) {
-
-    const node =
-      document.getElementById('toast');
-
-    if (!node) return;
-
-    node.textContent = text;
-
-    node.classList.add('show');
-
-    setTimeout(() => {
-      node.classList.remove('show');
-    }, 3500);
-  }
-
-
-  /* =========================
-     RENDER PACOTES
-  ========================= */
-
-  function renderizarPacotesTela() {
-
-    const dashboard =
-      document.getElementById('packagesGrid');
-
-    const loja =
-      document.getElementById('storePackages');
-
-    if (!pacotesAtuais.length) {
-
-      const vazio = `
-        <div class="empty">
-          Nenhum pacote disponível no momento.
-        </div>
-      `;
-
-      if (dashboard) {
-        dashboard.innerHTML = vazio;
-      }
-
-      if (loja) {
-        loja.innerHTML = vazio;
-      }
-
-      return;
-    }
-
-    const html = pacotesAtuais.map(p => {
-
-      const nome =
-        p.nome ||
-        p.name ||
-        'Pacote';
-
-      const minutos =
-        Number(p.minutos || 0);
-
-      const preco =
-        Number(p.preco || 0);
-
-      const descricao =
-        p.descricao ||
-        p.description ||
-        '';
-
-      return `
-        <article class="package-card">
-
-          <div class="package-name">
-            ${escapeHTML(nome)}
-          </div>
-
-          <div class="package-price">
-            ${formatarMoedaLocal(preco)}
-          </div>
-
-          <div class="package-minutes">
-            ${formatarMinutosLocal(minutos)}
-          </div>
-
-          <div class="package-description">
-            ${escapeHTML(descricao)}
-          </div>
-
-          <button
-            class="btn-buy"
-            onclick="comprar(${JSON.stringify(p.id)})"
-          >
-            💳 Comprar agora
-          </button>
-
-        </article>
-      `;
-    }).join('');
-
-    if (dashboard) {
-      dashboard.innerHTML = html;
-    }
-
-    if (loja) {
-      loja.innerHTML = html;
-    }
-  }
-
-
-  function renderizarLoja() {
-    renderizarPacotesTela();
-  }
-
-
-  /* =========================
-     COMPRA
-  ========================= */
-
-  async function comprar(id) {
-
-    if (!id) {
-      toast('Pacote inválido.');
-      return;
-    }
-
-    try {
-
-      toast('Preparando pagamento...');
-
-      const data =
-        await api('/orders', {
-          method: 'POST',
-          body: JSON.stringify({
-            pacote_id: id
-          })
-        });
-
-      const url =
-        data.checkout_url ||
-        data.url;
-
-      if (url) {
-        window.location.href = url;
-        return;
-      }
-
-      toast(
-        data.message ||
-        'Pedido criado. Aguarde a confirmação.'
-      );
-
-      carregarUsuarioTela();
-
-    } catch (error) {
-
-      toast(
-        error.message ||
-        'Não foi possível iniciar o pagamento.'
-      );
-    }
-  }
-
-
-  /* =========================
-     USUÁRIO
-  ========================= */
-
-  async function carregarUsuarioTela() {
-
-    try {
-
-      const data =
-        await api('/me');
-
-      usuarioAtual =
-        data.user ||
-        data.usuario ||
-        data;
-
-      atualizarUsuarioNaTela();
-
-    } catch (error) {
-
-      console.error(error);
-
-      limparSessao();
-
-      window.location.href =
-        'index.html';
-    }
-  }
-
-
-  function atualizarUsuarioNaTela() {
-
-    if (!usuarioAtual) return;
-
-    const nome =
-      usuarioAtual.username ||
-      'Jogador';
-
-    const email =
-      usuarioAtual.email ||
-      '—';
-
-    const plano =
-      usuarioAtual.plano ||
-      'Nenhum';
-
-    const minutos =
-      Number(usuarioAtual.minutos || 0);
-
-    document.getElementById('userName')
-      .textContent = nome;
-
-    document.getElementById('welcomeName')
-      .textContent = nome;
-
-    document.getElementById('userPlan')
-      .textContent = plano;
-
-    document.getElementById('minutes')
-      .textContent =
-      formatarMinutosLocal(minutos);
-
-    document.getElementById('plan')
-      .textContent = plano;
-
-    document.getElementById('profileUsername')
-      .textContent = nome;
-
-    document.getElementById('profileEmail')
-      .textContent = email;
-
-    document.getElementById('profilePlan')
-      .textContent = plano;
-
-    document.getElementById('profileMinutes')
-      .textContent =
-      formatarMinutosLocal(minutos);
-
-    const avatar =
-      document.getElementById('avatar');
-
-    if (avatar && nome) {
-      avatar.textContent =
-        nome.charAt(0).toUpperCase();
-    }
-  }
-
-
-  /* =========================
-     PEDIDOS
-  ========================= */
-
-  async function carregarPedidosTela() {
-
-    const container =
-      document.getElementById('ordersList');
-
-    if (!container) return;
-
-    container.innerHTML = `
-      <div class="empty">
-        Carregando pedidos...
-      </div>
-    `;
-
-    try {
-
-      const data =
-        await api('/orders');
-
-      pedidosAtuais =
-        data.orders ||
-        data.pedidos ||
-        [];
-
-      renderizarPedidos();
-
-    } catch (error) {
-
-      container.innerHTML = `
-        <div class="empty">
-          Não foi possível carregar os pedidos.
-        </div>
-      `;
-    }
-  }
-
-
-  function renderizarPedidos() {
-
-    const container =
-      document.getElementById('ordersList');
-
-    if (!container) return;
-
-    if (!pedidosAtuais.length) {
-
-      container.innerHTML = `
-        <div class="empty">
-          Você ainda não possui pedidos.
-        </div>
-      `;
-
-      return;
-    }
-
-    container.innerHTML =
-      pedidosAtuais.map(pedido => {
-
-        const status =
-          String(
-            pedido.status || 'pendente'
-          ).toLowerCase();
-
-        let statusClass =
-          'status-pendente';
-
-        if (
-          status === 'pago' ||
-          status === 'approved' ||
-          status === 'aprovado'
-        ) {
-          statusClass =
-            'status-pago';
-        }
-
-        if (
-          status === 'cancelado' ||
-          status === 'cancelled'
-        ) {
-          statusClass =
-            'status-cancelado';
-        }
-
-        const valor =
-          Number(pedido.valor || 0);
-
-        const data =
-          pedido.created_at
-            ? new Date(
-                pedido.created_at
-              ).toLocaleString('pt-BR')
-            : '—';
-
-        return `
-          <div class="order">
-
+          <div class="card-head">
             <div>
-              <strong>
-                Pedido #${escapeHTML(
-                  pedido.id ?? '—'
-                )}
-              </strong>
-
-              <small>
-                ${escapeHTML(data)}
-              </small>
+              <h2>🛒 Pacotes ativos</h2>
+              <p>Pacotes atualmente disponíveis para compra.</p>
             </div>
-
-            <div>
-              <strong>
-                ${formatarMoedaLocal(valor)}
-              </strong>
-            </div>
-
-            <div>
-              <span
-                class="status ${statusClass}"
-              >
-                ${escapeHTML(
-                  status.toUpperCase()
-                )}
-              </span>
-            </div>
-
           </div>
-        `;
 
-      }).join('');
-  }
+          <div class="packages-grid" id="dashboardPackages">
+            <div class="empty">Carregando pacotes...</div>
+          </div>
 
+        </div>
 
-  /* =========================
-     FIVEM
-  ========================= */
-
-  async function iniciarFiveM() {
-
-    if (!usuarioAtual) {
-      toast('Carregando sua conta...');
-      return;
-    }
-
-    const minutos =
-      Number(usuarioAtual.minutos || 0);
-
-    if (minutos <= 0) {
-      toast(
-        'Você não possui minutos disponíveis. Compre um pacote primeiro.'
-      );
-
-      abrirSecao('loja');
-
-      return;
-    }
-
-    const botao =
-      document.getElementById('startFiveM');
-
-    const status =
-      document.getElementById('fivemStatus');
-
-    if (botao) {
-      botao.disabled = true;
-      botao.textContent =
-        '⏳ Iniciando...';
-    }
-
-    try {
-
-      const data =
-        await api('/stream/start', {
-          method: 'POST',
-          body: JSON.stringify({})
-        });
-
-      if (status) {
-        status.textContent =
-          '● Sessão iniciada';
-        status.style.color =
-          '#4ade80';
-      }
-
-      toast(
-        data.message ||
-        'Sessão FiveM iniciada.'
-      );
-
-      /*
-       * Quando o backend de streaming
-       * estiver conectado, os dados retornados
-       * poderão ser usados aqui para abrir
-       * o player/cliente de streaming.
-       */
-
-      if (data.url) {
-        window.open(
-          data.url,
-          '_blank'
-        );
-      }
-
-    } catch (error) {
-
-      toast(
-        error.message ||
-        'Não foi possível iniciar o FiveM.'
-      );
-
-      if (status) {
-        status.textContent =
-          '● Não iniciado';
-        status.style.color =
-          '#f87171';
-      }
-
-    } finally {
-
-      if (botao) {
-        botao.disabled = false;
-        botao.textContent =
-          '🚀 Iniciar FiveM';
-      }
-    }
-  }
+      </section>
 
 
-  /* =========================
-     UTILITÁRIOS
-  ========================= */
+      <!-- ================= USUÁRIOS ================= -->
 
-  function formatarMinutosLocal(minutos) {
+      <section class="page" id="usuarios">
 
-    const total =
-      Math.max(
-        0,
-        Number(minutos) || 0
-      );
+        <div class="card">
 
-    const horas =
-      Math.floor(total / 60);
+          <div class="card-head">
+            <div>
+              <h2>👥 Usuários cadastrados</h2>
+              <p>Gerencie contas, minutos e acesso dos clientes.</p>
+            </div>
 
-    const minutosRestantes =
-      total % 60;
+            <button class="btn btn-small" onclick="carregarUsuariosTela()">
+              🔄 Atualizar
+            </button>
+          </div>
 
-    if (horas > 0) {
-      return `${horas}h ${minutosRestantes}m`;
-    }
-
-    return `${minutosRestantes}m`;
-  }
-
-
-  function formatarMoedaLocal(valor) {
-
-    return Number(valor || 0)
-      .toLocaleString(
-        'pt-BR',
-        {
-          style: 'currency',
-          currency: 'BRL'
-        }
-      );
-  }
-
-
-  function escapeHTML(valor) {
-
-    return String(valor ?? '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
-  }
-
-
-  /* =========================
-     INICIALIZAÇÃO
-  ========================= */
-
-  document.addEventListener(
-    'DOMContentLoaded',
-    async () => {
-
-      if (
-        typeof verificarAutenticacao ===
-        'function'
-      ) {
-        if (!verificarAutenticacao()) {
-          return;
-        }
-      } else {
-        const t =
-          localStorage.getItem('igc_token') ||
-          sessionStorage.getItem('igc_token');
-
-        if (!t) {
-          window.location.href =
-            'index.html';
-          return;
-        }
-      }
-
-      await carregarUsuarioTela();
-
-      try {
-
-        const data =
-          await api('/packages');
-
-        pacotesAtuais =
-          data.packages ||
-          data.pacotes ||
-          [];
-
-        renderizarPacotesTela();
-
-      } catch (error) {
-
-        console.error(
-          'Erro ao carregar pacotes:',
-          error
-        );
-      }
-
-      carregarPedidosTela();
-
-    }
-  );
-
-</script>
-
-</body>
-</html>
+          <input
+            class="search"
+            id="userSearch"
+            placeholder="🔎 Buscar usuário ou e-mail..."
+            oninput="
