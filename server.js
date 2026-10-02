@@ -24,6 +24,38 @@ const PUBLIC_URL = String(
 ).replace(/\/+$/, '');
 
 const SESSION_TTL = 1000 * 60 * 60 * 24 * 7;
+const STREAM_AGENT_KEY = String(
+  process.env.STREAM_AGENT_KEY || ''
+).trim();
+
+const streamAgents = new Map();
+const streamCommands = new Map();
+let lastStreamAgentId = '';
+
+function streamAgentAuthorized(req) {
+  if (!STREAM_AGENT_KEY) {
+    return false;
+  }
+
+  const key = String(
+    req.headers['x-stream-agent-key'] || ''
+  ).trim();
+
+  return key === STREAM_AGENT_KEY;
+}
+
+function requireStreamAgent(req, res) {
+  if (!streamAgentAuthorized(req)) {
+    sendJson(res, 401, {
+      ok: false,
+      error: 'Stream Agent não autorizado.'
+    });
+
+    return false;
+  }
+
+  return true;
+}
 
 if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
   console.error('ERRO: SUPABASE_URL e SUPABASE_SECRET_KEY precisam estar configurados.');
@@ -646,7 +678,233 @@ async function creditApprovedPayment(payment, webhook) {
 async function handleApi(req, res) {
   const pathname = routePath(req);
   const method = req.method.toUpperCase();
+  
+  /*
+   * =========================================================
+   * GAMECLOUD STREAM AGENT
+   * HEARTBEAT
+   * =========================================================
+   */
 
+  if (
+    pathname === '/api/stream/heartbeat' &&
+    method === 'POST'
+  ) {
+    if (!requireStreamAgent(req, res)) {
+      return true;
+    }
+
+    try {
+      const body = await readJson(req);
+
+      const agentId = String(
+        body.agentId ||
+        body.agent_id ||
+        body.host ||
+        'gamecloud-agent'
+      ).trim();
+
+      if (!agentId) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'agentId não informado.'
+        });
+
+        return true;
+      }
+
+      const agent = {
+        agentId,
+        status: String(body.status || 'online'),
+        game: String(body.game || 'FiveM'),
+        host: String(body.host || agentId),
+        message: String(body.message || ''),
+        lastSeen: new Date().toISOString()
+      };
+
+      streamAgents.set(agentId, agent);
+      lastStreamAgentId = agentId;
+
+      sendJson(res, 200, {
+        ok: true,
+        agent
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+
+  /*
+   * =========================================================
+   * STREAM AGENT - BUSCAR COMANDO
+   * =========================================================
+   */
+
+  if (
+    pathname === '/api/stream/command' &&
+    method === 'GET'
+  ) {
+    if (!requireStreamAgent(req, res)) {
+      return true;
+    }
+
+    const agentId = lastStreamAgentId;
+
+    if (!agentId) {
+      sendJson(res, 200, {
+        ok: true,
+        command: null
+      });
+
+      return true;
+    }
+
+    const command =
+      streamCommands.get(agentId) || null;
+
+    if (command) {
+      streamCommands.delete(agentId);
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      command
+    });
+
+    return true;
+  }
+    /*
+   * =========================================================
+   * STREAM AGENT - STATUS
+   * =========================================================
+   */
+
+  if (
+    pathname === '/api/stream/status' &&
+    method === 'GET'
+  ) {
+    sendJson(res, 200, {
+      ok: true,
+      agents: Array.from(
+        streamAgents.values()
+      )
+    });
+
+    return true;
+  }
+
+  /*
+   * =========================================================
+   * ADMIN - ENVIAR COMANDO PARA O STREAM AGENT
+   * =========================================================
+   */
+
+  if (
+    pathname === '/api/admin/stream/command' &&
+    method === 'POST'
+  ) {
+    try {
+      const admin = await requireAdmin(req, res);
+
+      if (!admin) {
+        return true;
+      }
+
+      const body = await readJson(req);
+
+      const command = String(
+        body.command || ''
+      ).trim();
+
+      if (
+        command !== 'start_fivem' &&
+        command !== 'stop_fivem'
+      ) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Comando inválido.'
+        });
+
+        return true;
+      }
+
+      const agentId = String(
+        body.agentId ||
+        body.agent_id ||
+        lastStreamAgentId ||
+        ''
+      ).trim();
+
+      if (!agentId) {
+        sendJson(res, 404, {
+          ok: false,
+          error: 'Nenhum Stream Agent online.'
+        });
+
+        return true;
+      }
+
+      streamCommands.set(
+        agentId,
+        command
+      );
+
+      sendJson(res, 200, {
+        ok: true,
+        agentId,
+        command
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
+    if (
+    pathname === '/api/admin/stream/status' &&
+    method === 'GET'
+  ) {
+    try {
+      const admin = await requireAdmin(req, res);
+
+      if (!admin) {
+        return true;
+      }
+
+      const agents = Array.from(
+        streamAgents.values()
+      );
+
+      sendJson(res, 200, {
+        ok: true,
+        agents
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error.message
+      });
+
+      return true;
+    }
+  }
   /*
     ---------------------------------------------------------
     HEALTH
