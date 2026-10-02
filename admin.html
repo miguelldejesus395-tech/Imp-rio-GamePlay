@@ -1,0 +1,4267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Império GamePlay — Administração</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #070812;
+      --panel: #101323;
+      --panel2: #15192b;
+      --border: rgba(255,255,255,.09);
+      --text: #f5f7ff;
+      --muted: #9299b5;
+      --blue: #4f8cff;
+      --purple: #9b5cff;
+      --pink: #ff4fd8;
+      --green: #32e59b;
+      --yellow: #ffc857;
+      --red: #ff5c6c;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(79,140,255,.16), transparent 30%),
+        radial-gradient(circle at 90% 15%, rgba(155,92,255,.14), transparent 28%),
+        radial-gradient(circle at 50% 100%, rgba(255,79,216,.08), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      padding: 22px 16px;
+      background: rgba(9,11,22,.94);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 50;
+      backdrop-filter: blur(20px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px 25px;
+    }
+
+    .brand-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      font-size: 23px;
+      background: linear-gradient(135deg, var(--blue), var(--purple), var(--pink));
+      box-shadow: 0 0 30px rgba(110,90,255,.3);
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 15px;
+      letter-spacing: .4px;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .menu-title {
+      padding: 15px 12px 8px;
+      color: #626a88;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav button {
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #aeb5d0;
+      border-radius: 12px;
+      padding: 12px 13px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      text-align: left;
+      transition: .2s;
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      color: #fff;
+      background: linear-gradient(90deg, rgba(79,140,255,.15), rgba(155,92,255,.09));
+      border-color: rgba(110,130,255,.15);
+    }
+
+    .nav-icon {
+      width: 25px;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    .sidebar-bottom {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 20px;
+    }
+
+    .admin-user {
+      padding: 13px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.035);
+      border: 1px solid var(--border);
+      margin-bottom: 9px;
+    }
+
+    .admin-user small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .admin-user strong {
+      font-size: 13px;
+    }
+
+    .logout {
+      width: 100%;
+      border: 1px solid rgba(255,92,108,.2);
+      background: rgba(255,92,108,.06);
+      color: #ff8490;
+      padding: 11px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    /* MAIN */
+
+    .main {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 24px;
+    }
+
+    .topbar h1 {
+      font-size: clamp(22px, 3vw, 31px);
+      margin-bottom: 5px;
+    }
+
+    .topbar p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 13px;
+      border: 1px solid rgba(50,229,155,.18);
+      background: rgba(50,229,155,.06);
+      border-radius: 12px;
+      color: #75efbe;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    /* PAGES */
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* STATS */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      position: relative;
+      overflow: hidden;
+      padding: 20px;
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(18,22,40,.95), rgba(10,12,25,.95));
+      border-radius: 18px;
+    }
+
+    .stat::after {
+      content: "";
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      right: -40px;
+      top: -45px;
+      border-radius: 50%;
+      background: rgba(79,140,255,.13);
+      filter: blur(15px);
+    }
+
+    .stat-icon {
+      width: 39px;
+      height: 39px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: rgba(79,140,255,.12);
+      margin-bottom: 14px;
+      font-size: 18px;
+    }
+
+    .stat:nth-child(2) .stat-icon {
+      background: rgba(50,229,155,.1);
+    }
+
+    .stat:nth-child(3) .stat-icon {
+      background: rgba(255,200,87,.1);
+    }
+
+    .stat:nth-child(4) .stat-icon {
+      background: rgba(255,79,216,.1);
+    }
+
+    .stat small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 25px;
+    }
+
+    /* CARDS */
+
+    .card {
+      background: rgba(14,17,31,.88);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.12);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .card-head h2 {
+      font-size: 17px;
+    }
+
+    .card-head p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* BUTTONS */
+
+    .btn {
+      border: 0;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-weight: 800;
+      color: white;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 8px 25px rgba(79,140,255,.16);
+    }
+
+    .btn:hover {
+      filter: brightness(1.1);
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, #16c98a, #35e5a1);
+      color: #06150f;
+    }
+
+    .btn-red {
+      background: rgba(255,92,108,.1);
+      color: #ff7f8a;
+      border: 1px solid rgba(255,92,108,.2);
+      box-shadow: none;
+    }
+
+    .btn-yellow {
+      background: linear-gradient(135deg, #ffb52e, #ffd35c);
+      color: #211600;
+    }
+
+    .btn-small {
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+
+    /* FORM */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 13px;
+    }
+
+    .form-grid.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: #aeb5d0;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      outline: none;
+      background: #0a0d19;
+      color: white;
+      border-radius: 10px;
+      padding: 11px 12px;
+    }
+
+    .field textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(79,140,255,.5);
+      box-shadow: 0 0 0 3px rgba(79,140,255,.08);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    /* TABLE */
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      color: #747c9b;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      padding: 11px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 13px 11px;
+      border-bottom: 1px solid rgba(255,255,255,.055);
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255,255,255,.015);
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      font-weight: 900;
+    }
+
+    .user-cell strong {
+      display: block;
+    }
+
+    .user-cell span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 5px 8px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .badge-green {
+      background: rgba(50,229,155,.1);
+      color: #67eeb6;
+    }
+
+    .badge-red {
+      background: rgba(255,92,108,.1);
+      color: #ff7d88;
+    }
+
+    .badge-yellow {
+      background: rgba(255,200,87,.1);
+      color: #ffd66e;
+    }
+
+    .badge-blue {
+      background: rgba(79,140,255,.1);
+      color: #76a7ff;
+    }
+
+    /* PACKAGES */
+
+    .packages-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .package-card {
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(150deg, #13182a, #0c0f1c);
+    }
+
+    .package-card h3 {
+      margin-bottom: 6px;
+    }
+
+    .package-price {
+      font-size: 24px;
+      font-weight: 900;
+      margin: 10px 0;
+    }
+
+    .package-minutes {
+      color: #71a5ff;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .package-description {
+      color: var(--muted);
+      font-size: 11px;
+      min-height: 34px;
+      margin: 9px 0 14px;
+    }
+
+    /* TOGGLE */
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      gap: 15px;
+    }
+
+    .toggle-row:last-child {
+      border-bottom: 0;
+    }
+
+    .toggle-row strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .toggle-row small {
+      color: var(--muted);
+      display: block;
+      margin-top: 3px;
+      font-size: 10px;
+    }
+
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 99px;
+      background: #282d40;
+      transition: .2s;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: #9299b5;
+      transition: .2s;
+    }
+
+    .switch input:checked + .slider {
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(22px);
+      background: white;
+    }
+
+    /* PAYMENT */
+
+    .payment-box {
+      padding: 17px;
+      border: 1px solid rgba(50,229,155,.14);
+      background: rgba(50,229,155,.035);
+      border-radius: 15px;
+      margin-bottom: 18px;
+    }
+
+    .payment-box strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .payment-box span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .handle {
+      margin-top: 10px;
+      color: #75efbe;
+      font-weight: 800;
+    }
+
+    /* SEARCH */
+
+    .search {
+      width: 100%;
+      max-width: 300px;
+      background: #0a0d19;
+      border: 1px solid var(--border);
+      color: white;
+      padding: 10px 12px;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: rgba(79,140,255,.45);
+    }
+
+    /* EMPTY */
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 30px;
+      font-size: 13px;
+    }
+
+    /* TOAST */
+
+    #message {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 200;
+      max-width: 360px;
+      padding: 13px 16px;
+      border-radius: 12px;
+      background: #171c30;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+      display: none;
+      font-size: 12px;
+    }
+
+    #message.show {
+      display: block;
+    }
+
+    #message.error {
+      border-color: rgba(255,92,108,.3);
+      color: #ff9ba4;
+    }
+
+    #message.success {
+      border-color: rgba(50,229,155,.3);
+      color: #7af0bd;
+    }
+
+    /* MOBILE */
+
+    .mobile-top {
+      display: none;
+    }
+
+    @media (max-width: 1050px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .packages-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .sidebar {
+        display: none;
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+        padding-top: 75px;
+      }
+
+      .mobile-top {
+        position: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        padding: 0 15px;
+        background: rgba(7,8,18,.95);
+        border-bottom: 1px solid var(--border);
+        z-index: 60;
+        backdrop-filter: blur(15px);
+      }
+
+      .mobile-top strong {
+        font-size: 14px;
+      }
+
+      .mobile-menu-btn {
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--border);
+        background: #101323;
+        color: white;
+        border-radius: 10px;
+        font-size: 18px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .packages-grid,
+      .form-grid,
+      .form-grid.three {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .status {
+        align-self: stretch;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 15px;
+      }
+    }
+
+    /* MOBILE MENU */
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      inset: 60px 0 0;
+      background: rgba(5,6,14,.97);
+      z-index: 55;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .mobile-menu.open {
+      display: block;
+    }
+
+    .mobile-menu button {
+      width: 100%;
+      padding: 13px;
+      margin-bottom: 7px;
+      border: 1px solid var(--border);
+      background: #101323;
+      color: #cbd1e8;
+      border-radius: 11px;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="mobile-top">
+    <button
+      class="mobile-menu-btn"
+      onclick="toggleMobileMenu()"
+    >
+      ☰
+    </button>
+
+    <strong>👑 Império GamePlay</strong>
+
+    <span>⚡</span>
+  </div>
+
+  <div
+    id="mobileMenu"
+    class="mobile-menu"
+  >
+    <button onclick="showAdminPage('dashboard'); toggleMobileMenu()">
+      📊 Dashboard
+    </button>
+
+    <button onclick="showAdminPage('users'); toggleMobileMenu()">
+      👥 Usuários
+    </button>
+
+    <button onclick="showAdminPage('packages'); toggleMobileMenu()">
+      📦 Pacotes
+    </button>
+
+    <button onclick="showAdminPage('orders'); toggleMobileMenu()">
+      🧾 Pedidos
+    </button>
+
+    <button onclick="showAdminPage('payment'); toggleMobileMenu()">
+      💳 InfinitePay
+    </button>
+
+    <button onclick="showAdminPage('config'); toggleMobileMenu()">
+      ⚙️ Configurações
+    </button>
+  </div>
+
+  <div class="app">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+      <div class="brand">
+
+        <div class="brand-icon">
+          👑
+        </div>
+
+        <div>
+          <strong>Império GamePlay</strong>
+          <span>Cloud Gaming</span>
+        </div>
+
+      </div>
+
+
+      <div class="menu-title">
+        Principal
+      </div>
+
+
+      <nav class="nav">
+
+        <button
+          class="active"
+          onclick="showAdminPage('dashboard')"
+        >
+          <span class="nav-icon">📊</span>
+          Dashboard
+        </button>
+
+
+        <button
+          onclick="showAdminPage('users')"
+        >
+          <span class="nav-icon">👥</span>
+          Usuários
+        </button>
+
+
+        <button
+          onclick="showAdminPage('packages')"
+        >
+          <span class="nav-icon">📦</span>
+          Pacotes
+        </button>
+
+
+        <button
+          onclick="showAdminPage('orders')"
+        >
+          <span class="nav-icon">🧾</span>
+          Pedidos
+        </button>
+
+
+        <button
+          onclick="showAdminPage('payment')"
+        >
+          <span class="nav-icon">💳</span>
+          InfinitePay
+        </button>
+
+
+        <button
+          onclick="showAdminPage('config')"
+        >
+          <span class="nav-icon">⚙️</span>
+          Configurações
+        </button>
+
+      </nav>
+
+
+      <div class="sidebar-bottom">
+
+        <div class="admin-user">
+
+          <small>Administrador</small>
+
+          <strong>
+            👑 Painel Master
+          </strong>
+
+        </div>
+
+
+        <button
+          class="logout"
+          onclick="logout()"
+        >
+          🚪 Sair do painel
+        </button>
+
+      </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+      <header class="topbar">
+
+        <div>
+
+          <h1 id="pageTitle">
+            Dashboard
+          </h1>
+
+          <p id="pageDescription">
+            Visão geral do seu GameCloud.
+          </p>
+
+        </div>
+
+
+        <div class="status">
+
+          <span class="status-dot"></span>
+
+          Sistema online
+
+        </div>
+
+      </header>
+
+
+      <!-- DASHBOARD -->
+
+      <section
+        id="page-dashboard"
+        class="page active"
+      >
+
+        <div class="stats">
+
+          <div class="stat">
+
+            <div class="stat-icon">
+              👥
+            </div>
+
+            <small>
+              Usuários cadastrados
+            </small>
+
+            <strong id="totalUsers">
+              0
+            </strong>
+
+          </div>
+
+
+          <div class="stat">
+
+            <div class="stat-icon">
+              🎮
+            </div>
+
+            <small>
+              Servidores ativos
+            </small>
+
+            <strong id="activeServers">
+              0
+            </strong>
+
+          </div>
+
+
+          <div class="stat">
+
+            <div class="stat-icon">
+              🧾
+            </div>
+
+            <small>
+              Pedidos
+            </small>
+
+            <strong id="orders">
+              0
+            </strong>
+
+          </div>
+
+
+          <div class="stat">
+
+            <div class="stat-icon">
+              💰
+            </div>
+
+            <small>
+              Vendas
+            </small>
+
+            <strong id="sales">
+              R$ 0,00
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-head">
+
+            <div>
+
+              <h2>
+                Visão geral
+              </h2>
+
+              <p>
+                Resumo do estado atual do GameCloud.
+              </p>
+
+            </div>
+
+            <button
+              class="btn btn-small"
+              onclick="atualizarTudo()"
+            >
+              🔄 Atualizar
+            </button>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="payment-box">
+
+              <strong>
+                🎮 GameCloud
+              </strong>
+
+              <span>
+                Sistema preparado para gerenciamento
+                de usuários, pacotes e sessões.
+              </span>
+
+            </div>
+
+
+            <div class="payment-box">
+
+              <strong>
+                💳 Pagamentos
+              </strong>
+
+              <span>
+                Configure a InfinitePay na área
+                de pagamentos.
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- USERS -->
+
+      <section
+        id="page-users"
+        class="page"
+      >
+
+        <div class="card">
+
+          <div class="card-head">
+
+            <div>
+
+              <h2>
+                👥 Usuários
+              </h2>
+
+              <p>
+                Gerencie as contas e minutos dos clientes.
+              </p>
+
+            </div>
+
+
+            <input
+              id="userSearch"
+              class="search"
+              type="search"
+              placeholder="Buscar usuário..."
+              oninput="filtrarUsuarios()"
+            >
+
+          </div>
+
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Usuário
+                  </th>
+
+                  <th>
+                    E-mail
+                  </th>
+
+                  <th>
+                    Minutos
+                  </th>
+
+                  <th>
+                    Status
+                  </th>
+
+                  <th>
+                    Ações
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody id="usersTable">
+
+                <tr>
+
+                  <td
+                    colspan="5"
+                    class="empty"
+                  >
+                    Carregando usuários...
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+
+        <!-- EDIT USER -->
+
+        <div
+          id="userEditor"
+          class="card"
+          style="display:none"
+        >
+
+          <div class="card-head">
+
+            <div>
+
+              <h2>
+                ✏️ Editar usuário
+              </h2>
+
+              <p>
+                Altere os dados da conta selecionada.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <input
+            type="hidden"
+            id="editUserId"
+          >
+
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label>
+                Usuário
+              </label>
+
+              <input
+                id="editUsername"
+                type="text"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                E-mail
+              </label>
+
+              <input
+                id="editEmail"
+                type="email"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Minutos
+              </label>
+
+              <input
+                id="editMinutes"
+                type="number"
+                min="0"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Status
+              </label>
+
+              <select id="editActive">
+
+                <option value="true">
+                  Ativo
+                </option>
+
+                <option value="false">
+                  Bloqueado
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button
+              class="btn btn-green"
+              onclick="salvarEdicaoUsuario()"
+            >
+              💾 Salvar alterações
+            </button>
+
+            <button
+              class="btn btn-red"
+              onclick="fecharEditorUsuario()"
+            >
+              Cancelar
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- ADD MINUTES -->
+
+        <div class="card">
+
+          <div class="card-head">
+
+            <div>
+
+              <h2>
+                ⏱️ Adicionar minutos
+              </h2>
+
+              <p>
+                Você pode adicionar minutos pelo ID
+                ou pelo e-mail do usuário.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label>
+                ID do usuário
+              </label>
+
+              <input
+                id="minutesUserId"
+                type="text"
+                placeholder="ID do usuário"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Minutos pelo ID
+              </label>
+
+              <input
+                id="minutesAmount"
+                type="number"
+                min="1"
+                placeholder="Ex.: 60"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                E-mail do usuário
+              </label>
+
+              <input
+                id="minutesUserEmail"
+                type="email"
+                placeholder="cliente@email.com"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Minutos pelo e-mail
+              </label>
+
+              <input
+                id="minutesEmailAmount"
+                type="number"
+                min="1"
+                placeholder="Ex.: 60"
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button
+              class="btn btn-green"
+              onclick="adicionarMinutosTela()"
+            >
+              ⏱️ Adicionar minutos
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- PACKAGES -->
+
+      <section
+        id="page-packages"
+        class="page"
+      >
+
+        <div class="card">
+
+          <div class="card-head">
+
+            <div>
+
+              <h2>
+                📦 Pacotes
+              </h2>
+
+              <p>
+                Gerencie os planos vendidos no GameCloud.
+              </p>
+
+            </div>
+
+
+            <button
+              class="btn btn-green"
+              onclick="novoPacote()"
+            >
+              ➕ Novo pacote
+            </button>
+
+          </div>
+
+
+          <div
+            id="adminPackages"
+            class="packages-grid"
+          >
+
+            <div class="empty">
+              Carregando pacotes...
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- PACKAGE EDITOR -->
+
+        <div
+          id="packageEditor"
+          class="card"
+          style="display:none"
+        >
+
+          <div class="card-head">
+
+            <div>
+
+              <h2 id="packageEditorTitle">
+                📦 Novo pacote
+              </h2>
+
+              <p>
+                Configure os dados do pacote.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <input
+            type="hidden"
+            id="packageId"
+          >
+
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label>
+                Nome
+              </label>
+
+              <input
+                id="packageName"
+                type="text"
+                placeholder="Nome do pacote"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Minutos
+              </label>
+
+              <input
+                id="packageMinutes"
+                type="number"
+                min="1"
+                placeholder="Ex.: 60"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Preço
+              </label>
+
+              <input
+                id="packagePrice"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex.: 10.00"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Ordem
+              </label>
+
+              <input
+                id="packageOrder"
+                type="number"
+                min="0"
+                value="0"
+              >
+
+            </div>
+
+
+            <div class="field full">
+
+              <label>
+                Descrição
+              </label>
+
+              <textarea
+                id="packageDescription"
+                placeholder="Descrição do pacote"
+              ></textarea>
+
+            </div>
+
+          </div>
+
+
+          <div class="toggle-row">
+
+            <div>
+
+              <strong>
+                Pacote ativo
+              </strong>
+
+              <small>
+                Se desativado, não aparecerá para os clientes.
+              </small>
+
+            </div>
+
+
+            <label class="switch">
+
+              <input
+                type="checkbox"
+                id="packageActive"
+                checked
+              >
+
+              <span class="slider"></span>
+
+            </label>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button
+              class="btn btn-green"
+              onclick="salvarPacoteTela()"
+            >
+              💾 Salvar pacote
+            </button>
+
+
+            <button
+              class="btn btn-red"
+              id="deletePackageButton"
+              onclick="excluirPacoteAtual()"
+              style="display:none"
+            >
+              🗑️ Excluir
+            </button>
+
+
+            <button
+              class="btn btn-red"
+              onclick="fecharEditorPacote()"
+            >
+              Cancelar
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+            border: 0;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-weight: 800;
+      color: white;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 8px 25px rgba(79,140,255,.16);
+    }
+
+    .btn:hover {
+      filter: brightness(1.1);
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, #16c98a, #35e5a1);
+      color: #06150f;
+    }
+
+    .btn-red {
+      background: rgba(255,92,108,.1);
+      color: #ff7f8a;
+      border: 1px solid rgba(255,92,108,.2);
+      box-shadow: none;
+    }
+
+    .btn-yellow {
+      background: linear-gradient(135deg, #ffb52e, #ffd35c);
+      color: #211600;
+    }
+
+    .btn-small {
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+
+    /* FORM */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 13px;
+    }
+
+    .form-grid.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: #aeb5d0;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      outline: none;
+      background: #0a0d19;
+      color: white;
+      border-radius: 10px;
+      padding: 11px 12px;
+    }
+
+    .field textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(79,140,255,.5);
+      box-shadow: 0 0 0 3px rgba(79,140,255,.08);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    /* TABLE */
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      color: #747c9b;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      padding: 11px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 13px 11px;
+      border-bottom: 1px solid rgba(255,255,255,.055);
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255,255,255,.015);
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      font-weight: 900;
+    }
+
+    .user-cell strong {
+      display: block;
+    }
+
+    .user-cell span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 5px 8px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .badge-green {
+      background: rgba(50,229,155,.1);
+      color: #67eeb6;
+    }
+
+    .badge-red {
+      background: rgba(255,92,108,.1);
+      color: #ff7d88;
+    }
+
+    .badge-yellow {
+      background: rgba(255,200,87,.1);
+      color: #ffd66e;
+    }
+
+    .badge-blue {
+      background: rgba(79,140,255,.1);
+      color: #76a7ff;
+    }
+
+    /* PACKAGES */
+
+    .packages-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .package-card {
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(150deg, #13182a, #0c0f1c);
+    }
+
+    .package-card h3 {
+      margin-bottom: 6px;
+    }
+
+    .package-price {
+      font-size: 24px;
+      font-weight: 900;
+      margin: 10px 0;
+    }
+
+    .package-minutes {
+      color: #71a5ff;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .package-description {
+      color: var(--muted);
+      font-size: 11px;
+      min-height: 34px;
+      margin: 9px 0 14px;
+    }
+
+    /* TOGGLE */
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      gap: 15px;
+    }
+
+    .toggle-row:last-child {
+      border-bottom: 0;
+    }
+
+    .toggle-row strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .toggle-row small {
+      color: var(--muted);
+      display: block;
+      margin-top: 3px;
+      font-size: 10px;
+    }
+
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 99px;
+      background: #282d40;
+      transition: .2s;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: #9299b5;
+      transition: .2s;
+    }
+
+    .switch input:checked + .slider {
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(22px);
+      background: white;
+    }
+
+    /* PAYMENT */
+
+    .payment-box {
+      padding: 17px;
+      border: 1px solid rgba(50,229,155,.14);
+      background: rgba(50,229,155,.035);
+      border-radius: 15px;
+      margin-bottom: 18px;
+    }
+
+    .payment-box strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .payment-box span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .handle {
+      margin-top: 10px;
+      color: #75efbe;
+      font-weight: 800;
+    }
+
+    /* SEARCH */
+
+    .search {
+      width: 100%;
+      max-width: 300px;
+      background: #0a0d19;
+      border: 1px solid var(--border);
+      color: white;
+      padding: 10px 12px;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: rgba(79,140,255,.45);
+    }
+
+    /* EMPTY */
+          .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 30px;
+      font-size: 13px;
+    }
+
+    /* TOAST */
+
+    #message {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 200;
+      max-width: 360px;
+      padding: 13px 16px;
+      border-radius: 12px;
+      background: #171c30;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+      display: none;
+      font-size: 12px;
+    }
+
+    #message.show {
+      display: block;
+    }
+
+    #message.error {
+      border-color: rgba(255,92,108,.3);
+      color: #ff9ba4;
+    }
+
+    #message.success {
+      border-color: rgba(50,229,155,.3);
+      color: #7af0bd;
+    }
+
+    /* MOBILE */
+
+    .mobile-top {
+      display: none;
+    }
+
+    @media (max-width: 1050px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .packages-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .sidebar {
+        display: none;
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+        padding-top: 75px;
+      }
+
+      .mobile-top {
+        position: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        z-index: 100;
+        padding: 10px 14px;
+        background: rgba(7,8,18,.94);
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(20px);
+      }
+
+      .mobile-top strong {
+        font-size: 13px;
+      }
+
+      .mobile-menu {
+        position: fixed;
+        display: none;
+        z-index: 99;
+        top: 60px;
+        left: 10px;
+        right: 10px;
+        padding: 10px;
+        border: 1px solid var(--border);
+        background: #0c0f1c;
+        border-radius: 15px;
+      }
+
+      .mobile-menu.open {
+        display: grid;
+      }
+
+      .mobile-menu button {
+        border: 0;
+        background: transparent;
+        color: #bdc3db;
+        text-align: left;
+        padding: 12px;
+        border-radius: 10px;
+      }
+
+      .mobile-menu button:hover {
+        background: rgba(79,140,255,.1);
+        color: white;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .status {
+        display: none;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .stat {
+        padding: 15px;
+      }
+
+      .stat strong {
+        font-size: 20px;
+      }
+
+      .form-grid,
+      .form-grid.three {
+        grid-template-columns: 1fr;
+      }
+
+      .packages-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stat small {
+        font-size: 10px;
+      }
+
+      .stat strong {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body data-page="admin">
+
+  <div id="message"></div>
+
+  <!-- MOBILE HEADER -->
+  <div class="mobile-top">
+    <strong>👑 IMPÉRIO ADMIN</strong>
+    <button class="btn btn-small" onclick="toggleMobileMenu()">☰</button>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <button onclick="showAdminPage('dashboard')">📊 Dashboard</button>
+    <button onclick="showAdminPage('usuarios')">👥 Usuários</button>
+    <button onclick="showAdminPage('pacotes')">📦 Pacotes</button>
+    <button onclick="showAdminPage('pedidos')">🧾 Pedidos</button>
+    <button onclick="showAdminPage('pagamento')">💳 InfinitePay</button>
+    <button onclick="showAdminPage('config')">⚙️ Configurações</button>
+    <button onclick="logout()">🚪 Sair</button>
+  </div>
+
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="brand">
+        <div class="brand-icon">👑</div>
+        <div>
+          <strong>IMPÉRIO GAMEPLAY</strong>
+          <span>Central administrativa</span>
+        </div>
+      </div>
+
+      <div class="menu-title">Principal</div>
+
+      <nav class="nav">
+        <button class="active" data-page="dashboard" onclick="showAdminPage('dashboard')">
+          <span class="nav-icon">📊</span>
+          Dashboard
+        </button>
+
+        <button data-page="usuarios" onclick="showAdminPage('usuarios')">
+          <span class="nav-icon">👥</span>
+          Usuários
+        </button>
+
+        <button data-page="pacotes" onclick="showAdminPage('pacotes')">
+          <span class="nav-icon">📦</span>
+          Pacotes
+        </button>
+
+        <button data-page="pedidos" onclick="showAdminPage('pedidos')">
+          <span class="nav-icon">🧾</span>
+          Pedidos
+        </button>
+      </nav>
+
+      <div class="menu-title">Sistema</div>
+
+      <nav class="nav">
+        <button data-page="pagamento" onclick="showAdminPage('pagamento')">
+          <span class="nav-icon">💳</span>
+          InfinitePay
+        </button>
+
+        <button data-page="config" onclick="showAdminPage('config')">
+          <span class="nav-icon">⚙️</span>
+          Configurações
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+
+        <div class="admin-user">
+          <small>Administrador</small>
+          <strong>👑 Painel Master</strong>
+        </div>
+
+        <button class="logout" onclick="logout()">
+          🚪 Sair do painel
+        </button>
+
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageDescription">
+            Visão geral do seu GameCloud.
+          </p>
+        </div>
+
+        <div class="status">
+          <span class="status-dot"></span>
+          Sistema online
+        </div>
+      </header>
+
+
+      <!-- ================= DASHBOARD ================= -->
+
+      <section class="page active" id="dashboard">
+
+        <div class="stats">
+
+          <div class="stat">
+            <div class="stat-icon">👥</div>
+            <small>Total de usuários</small>
+            <strong id="totalUsers">0</strong>
+          </div>
+
+          <div class="stat">
+            <div class="stat-icon">🎮</div>
+            <small>Servidores ativos</small>
+            <strong id="activeServers">0</strong>
+          </div>
+
+          <div class="stat">
+            <div class="stat-icon">🧾</div>
+            <small>Pedidos</small>
+            <strong id="orders">0</strong>
+          </div>
+
+          <div class="stat">
+            <div class="stat-icon">💰</div>
+            <small>Vendas</small>
+            <strong id="sales">R$ 0,00</strong>
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>⚡ Ações rápidas</h2>
+              <p>Acesse rapidamente as funções administrativas.</p>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn" onclick="showAdminPage('usuarios')">
+              👥 Gerenciar usuários
+            </button>
+
+            <button class="btn" onclick="showAdminPage('pacotes')">
+              📦 Gerenciar pacotes
+            </button>
+
+            <button class="btn btn-green" onclick="showAdminPage('pagamento')">
+              💳 Configurar InfinitePay
+            </button>
+
+            <button class="btn btn-yellow" onclick="atualizarTudo()">
+              🔄 Atualizar dados
+            </button>
+          </div>
+                  </div>
+
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>🛒 Pacotes ativos</h2>
+              <p>Pacotes atualmente disponíveis para compra.</p>
+            </div>
+          </div>
+
+          <div class="packages-grid" id="dashboardPackages">
+            <div class="empty">Carregando pacotes...</div>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= USUÁRIOS ================= -->
+
+      <section class="page" id="usuarios">
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>👥 Usuários cadastrados</h2>
+              <p>Gerencie contas, minutos e acesso dos clientes.</p>
+            </div>
+
+            <button class="btn btn-small" onclick="carregarUsuariosTela()">
+              🔄 Atualizar
+            </button>
+          </div>
+
+          <input
+            class="search"
+            id="userSearch"
+            placeholder="🔎 Buscar usuário ou e-mail..."
+            oninput="filtrarUsuarios()"
+          >
+
+          <div class="table-wrap" style="margin-top:15px">
+
+            <table>
+
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>E-mail</th>
+                  <th>Minutos</th>
+                  <th>Plano</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="usersTable">
+                <tr>
+                  <td colspan="6" class="empty">
+                    Carregando usuários...
+                  </td>
+                </tr>
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+
+        <div class="card" id="editUserCard" style="display:none">
+
+          <div class="card-head">
+            <div>
+              <h2>✏️ Editar usuário</h2>
+              <p>Altere os dados e o saldo de minutos.</p>
+            </div>
+
+            <button class="btn btn-red btn-small" onclick="fecharEditorUsuario()">
+              Fechar
+            </button>
+          </div>
+
+          <input type="hidden" id="editUserId">
+
+          <div class="form-grid">
+
+            <div class="field">
+              <label>Usuário</label>
+              <input id="editUsername">
+            </div>
+
+            <div class="field">
+              <label>E-mail</label>
+              <input id="editEmail" type="email">
+            </div>
+
+            <div class="field">
+              <label>Plano</label>
+              <input id="editPlan">
+            </div>
+
+            <div class="field">
+              <label>Minutos</label>
+              <input id="editMinutes" type="number" min="0">
+            </div>
+
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <strong>Conta bloqueada</strong>
+              <small>Impede o usuário de acessar a plataforma.</small>
+            </div>
+
+            <label class="switch">
+              <input type="checkbox" id="editBlocked">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-green" onclick="salvarEdicaoUsuario()">
+              💾 Salvar alterações
+            </button>
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>⏱️ Adicionar minutos</h2>
+              <p>Envie minutos gratuitamente para um usuário.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+
+            <div class="field">
+              <label>ID do usuário</label>
+              <input id="giftUserId" placeholder="UUID do usuário">
+            </div>
+
+            <div class="field">
+              <label>Quantidade de minutos</label>
+              <input id="giftMinutes" type="number" min="1" placeholder="Ex.: 120">
+            </div>
+
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-yellow" onclick="adicionarMinutosTela()">
+              🎁 Adicionar minutos
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= PACOTES ================= -->
+
+      <section class="page" id="pacotes">
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>📦 Pacotes de minutos</h2>
+              <p>Crie e edite os produtos da loja.</p>
+            </div>
+
+            <button class="btn" onclick="novoPacote()">
+              + Novo pacote
+            </button>
+          </div>
+
+          <div class="packages-grid" id="adminPackages">
+            <div class="empty">Carregando pacotes...</div>
+          </div>
+
+        </div>
+
+
+        <div class="card" id="packageEditor" style="display:none">
+
+          <div class="card-head">
+            <div>
+              <h2 id="packageEditorTitle">📦 Novo pacote</h2>
+              <p>Configure o produto que aparecerá na loja.</p>
+            </div>
+
+            <button class="btn btn-red btn-small" onclick="fecharEditorPacote()">
+              Fechar
+            </button>
+          </div>
+
+          <input type="hidden" id="packageId">
+
+          <div class="form-grid">
+
+            <div class="field">
+              <label>Nome do pacote</label>
+              <input id="packageName" placeholder="Ex.: Pacote 120 Minutos">
+            </div>
+
+            <div class="field">
+              <label>Minutos</label>
+              <input id="packageMinutes" type="number" min="1" placeholder="120">
+            </div>
+
+            <div class="field">
+              <label>Preço em reais</label>
+              <input id="packagePrice" type="number" min="0" step="0.01" placeholder="10.00">
+            </div>
+
+            <div class="field">
+              <label>Ordem</label>
+              <input id="packageOrder" type="number" min="0" value="0">
+            </div>
+
+            <div class="field full">
+              <label>Descrição</label>
+              <textarea id="packageDescription" placeholder="Descrição do pacote..."></textarea>
+            </div>
+
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <strong>Pacote ativo</strong>
+              <small>Se desativado, não aparecerá para os clientes.</small>
+            </div>
+
+            <label class="switch">
+              <input type="checkbox" id="packageActive" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-green" onclick="salvarPacoteTela()">
+              💾 Salvar pacote
+            </button>
+
+            <button class="btn btn-red" id="deletePackageButton" onclick="excluirPacoteAtual()" style="display:none">
+              🗑️ Excluir
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= PEDIDOS ================= -->
+
+      <section class="page" id="pedidos">
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>🧾 Pedidos</h2>
+              <p>Acompanhe as compras realizadas na plataforma.</p>
+            </div>
+
+            <button class="btn btn-small" onclick="carregarPedidosTela()">
+              🔄 Atualizar
+            </button>
+          </div>
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Usuário</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+
+              <tbody id="ordersTable">
+                <tr>
+                  <td colspan="5" class="empty">
+                    Carregando pedidos...
+                  </td>
+                </tr>
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= INFINITEPAY ================= -->
+
+      <section class="page" id="pagamento">
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>💳 InfinitePay</h2>
+              <p>Configure o recebimento das compras da loja.</p>
+            </div>
+          </div>
+
+
+          <div class="payment-box">
+
+            <strong>🟢 Integração de pagamentos</strong>
+
+            <span>
+              O cliente será direcionado ao checkout da InfinitePay
+              quando comprar um pacote.
+            </span>
+
+            <div class="handle" id="paymentHandlePreview">
+              Handle: não configurado
+            </div>
+
+          </div>
+
+
+          <div class="toggle-row">
+
+            <div>
+              <strong>Ativar InfinitePay</strong>
+              <small>
+                Permite gerar checkout para os clientes.
+              </small>
+            </div>
+
+            <label class="switch">
+              <input type="checkbox" id="infinitepayActive">
+              <span class="slider"></span>
+            </label>
+
+          </div>
+
+
+          <div class="toggle-row">
+
+            <div>
+              <strong>Pix</strong>
+              <small>
+                Permitir pagamento via Pix.
+              </small>
+            </div>
+
+            <label class="switch">
+              <input type="checkbox" id="pixActive" checked>
+              <span class="slider"></span>
+            </label>
+
+          </div>
+
+
+          <div class="toggle-row">
+
+            <div>
+              <strong>Cartão</strong>
+              <small>
+                Permitir pagamento via cartão.
+              </small>
+            </div>
+
+            <label class="switch">
+              <input type="checkbox" id="cardActive" checked>
+              <span class="slider"></span>
+            </label>
+
+          </div>
+
+
+          <div class="form-grid" style="margin-top:18px">
+
+            <div class="field full">
+
+              <label>
+                Handle da InfinitePay
+              </label>
+
+              <input
+                id="infinitepayHandle"
+                placeholder="Ex.: suaempresa"
+                autocomplete="off"
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button class="btn btn-green" onclick="salvarInfinitePayTela()">
+              💾 Salvar configuração
+            </button>
+
+            <button class="btn btn-yellow" onclick="testarInfinitePay()">
+              🔎 Verificar configuração
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>ℹ️ Como funciona</h2>
+              <p>Fluxo da compra.</p>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <strong>1. Cliente escolhe um pacote</strong>
+              <small>O pedido é registrado no GameCloud.</small>
+            </div>
+            <span class="badge badge-blue">PEDIDO</span>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <strong>2. Checkout InfinitePay</strong>
+              <small>O cliente realiza o pagamento.</small>
+            </div>
+            <span class="badge badge-yellow">PAGAMENTO</span>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <strong>3. Confirmação</strong>
+              <small>O servidor confirma o pagamento.</small>
+            </div>
+            <span class="badge badge-green">CONFIRMADO</span>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <strong>4. Minutos liberados</strong>
+              <small>O saldo do cliente é atualizado.</small>
+            </div>
+            <span class="badge badge-green">MINUTOS</span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= CONFIGURAÇÕES ================= -->
+
+      <section class="page" id="config">
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>⚙️ Configurações do sistema</h2>
+              <p>Informações gerais do painel administrativo.</p>
+            </div>
+          </div>
+
+
+          <div class="toggle-row">
+            <div>
+              <strong>Banco de dados</strong>
+              <small>Persistência principal dos usuários e pedidos.</small>
+            </div>
+
+            <span class="badge badge-green">
+              SUPABASE
+            </span>
+          </div>
+
+
+          <div class="toggle-row">
+            <div>
+              <strong>GameCloud</strong>
+              <small>Plataforma de gerenciamento.</small>
+            </div>
+
+            <span class="badge badge-green">
+              ONLINE
+            </span>
+          </div>
+
+
+          <div class="toggle-row">
+            <div>
+              <strong>Streaming FiveM</strong>
+              <small>Integração com o módulo de streaming.</small>
+            </div>
+
+            <span class="badge badge-yellow">
+              CONFIGURAÇÃO
+            </span>
+          </div>
+
+
+          <div class="toggle-row">
+            <div>
+              <strong>Pagamento</strong>
+              <small>Provedor configurado no painel.</small>
+            </div>
+
+            <span class="badge badge-blue" id="configPaymentStatus">
+              CARREGANDO
+            </span>
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-head">
+            <div>
+              <h2>🔄 Manutenção</h2>
+              <p>Atualize as informações exibidas no painel.</p>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn" onclick="atualizarTudo()">
+              🔄 Atualizar tudo
+            </button>
+
+            <button class="btn btn-red" onclick="logout()">
+              🚪 Encerrar sessão
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <script src="app.js"></script>
+
+  <script>
+    let adminUsers = [];
+    let adminPackages = [];
+    let adminOrders = [];
+
+    const pageInfo = {
+      dashboard: {
+        title: 'Dashboard',
+        description: 'Visão geral do seu GameCloud.'
+      },
+      usuarios: {
+        title: 'Usuários',
+        description: 'Gerencie contas, minutos e acesso dos clientes.'
+      },
+      pacotes: {
+        title: 'Pacotes',
+        description: 'Gerencie os produtos vendidos na loja.'
+      },
+      pedidos: {
+        title: 'Pedidos',
+        description: 'Acompanhe as compras dos clientes.'
+      },
+      pagamento: {
+        title: 'InfinitePay',
+        description: 'Configure e acompanhe a integração de pagamentos.'
+      },
+      config: {
+        title: 'Configurações',
+        description: 'Configurações gerais do sistema.'
+      }
+    };
+
+
+    function toast(text, error = false) {
+      const node = document.getElementById('message');
+
+      node.textContent = text;
+      node.className = 'show ' + (error ? 'error' : 'success');
+
+      clearTimeout(window.__toastTimer);
+
+      window.__toastTimer = setTimeout(() => {
+        node.className = '';
+        node.textContent = '';
+      }, 4000);
+    }
+
+
+    function showAdminPage(page) {
+
+      document.querySelectorAll('.page').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      const target = document.getElementById(page);
+
+      if (target) {
+        target.classList.add('active');
+      }
+
+      document.querySelectorAll('.nav button').forEach(button => {
+        button.classList.toggle(
+          'active',
+          button.dataset.page === page
+        );
+      });
+
+      const info = pageInfo[page] || pageInfo.dashboard;
+
+      document.getElementById('pageTitle').textContent =
+        info.title;
+
+      document.getElementById('pageDescription').textContent =
+        info.description;
+
+      document.getElementById('mobileMenu').classList.remove('open');
+
+      if (page === 'usuarios') {
+        carregarUsuariosTela();
+      }
+
+      if (page === 'pacotes') {
+        carregarPacotesTela();
+      }
+
+      if (page === 'pedidos') {
+        carregarPedidosTela();
+      }
+
+      if (page === 'pagamento') {
+        carregarPagamentoTela();
+      }
+    }
+
+
+    function toggleMobileMenu() {
+      document
+        .getElementById('mobileMenu')
+        .classList.toggle('open');
+    }
+
+
+    function escapar(texto) {
+      if (window.escaparHTML) {
+        return window.escaparHTML(texto);
+      }
+
+      return String(texto ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+
+    function moeda(valor) {
+      if (window.formatarMoeda) {
+        return window.formatarMoeda(valor);
+      }
+
+      return Number(valor || 0).toLocaleString(
+        'pt-BR',
+        {
+          style: 'currency',
+          currency: 'BRL'
+        }
+      );
+    }
+
+
+    function minutos(valor) {
+      if (window.formatarMinutos) {
+        return window.formatarMinutos(valor);
+      }
+
+      const total = Math.max(0, Number(valor) || 0);
+      return Math.floor(total / 60) + 'h ' + (total % 60) + 'm';
+    }
+
+
+    async function carregarDashboardTela() {
+
+      try {
+
+        const data =
+          await carregarAdminDashboard();
+
+        if (!data) return;
+
+        const pacotes =
+          await carregarPacotesAdmin();
+
+        adminPackages = pacotes;
+
+        renderizarPacotesDashboard(pacotes);
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+
+    }
+
+
+    function renderizarPacotesDashboard(pacotes) {
+
+      const container =
+        document.getElementById('dashboardPackages');
+
+      if (!container) return;
+
+      const ativos =
+        pacotes.filter(p => p.ativo !== false);
+
+      if (!ativos.length) {
+
+        container.innerHTML =
+          '<div class="empty">Nenhum pacote ativo.</div>';
+
+        return;
+      }
+
+      container.innerHTML =
+        ativos.map(p => {
+
+          const nome =
+            p.nome || p.name || 'Pacote';
+
+          const mins =
+            Number(p.minutos || 0);
+
+          const preco =
+            Number(p.preco || p.price || 0);
+
+          return `
+            <div class="package-card">
+
+              <h3>${escapar(nome)}</h3>
+
+              <div class="package-price">
+                ${moeda(preco)}
+              </div>
+
+              <div class="package-minutes">
+                ⏱️ ${escapar(minutos(mins))}
+              </div>
+
+              <div class="package-description">
+                ${escapar(p.descricao || '')}
+              </div>
+
+            </div>
+          `;
+
+        }).join('');
+    }
+
+
+    async function carregarUsuariosTela() {
+
+      try {
+
+        adminUsers =
+          await carregarUsuariosAdmin();
+
+        renderizarUsuarios();
+
+      } catch (error) {
+
+        toast(
+          error.message || 'Erro ao carregar usuários.',
+          true
+        );
+
+      }
+
+    }
+
+
+    function renderizarUsuarios(lista = adminUsers) {
+
+      const tbody =
+        document.getElementById('usersTable');
+
+      if (!tbody) return;
+
+      if (!lista.length) {
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty">
+              Nenhum usuário encontrado.
+            </td>
+          </tr>
+        `;
+
+        return;
+      }
+
+
+      tbody.innerHTML =
+        lista.map(user => {
+
+          const id =
+            user.id || '';
+
+          const nome =
+            user.username ||
+            user.nome ||
+            'Usuário';
+
+          const email =
+            user.email || '-';
+
+          const saldo =
+            Number(user.minutos || 0);
+
+          const plano =
+            user.plano || 'Nenhum';
+
+          const bloqueado =
+            user.bloqueado === true ||
+            user.blocked === true;
+
+          return `
+            <tr>
+
+              <td>
+
+                <div class="user-cell">
+
+                  <div class="avatar">
+                    ${escapar(
+                      nome.charAt(0).toUpperCase()
+                    )}
+                  </div>
+
+                  <div>
+                    <strong>
+                      ${escapar(nome)}
+                    </strong>
+
+                    <span>
+                      ${escapar(id)}
+                    </span>
+                  </div>
+
+                </div>
+
+              </td>
+
+              <td>
+                ${escapar(email)}
+              </td>
+
+              <td>
+                <strong>
+                  ${escapar(minutos(saldo))}
+                </strong>
+              </td>
+
+              <td>
+                <span class="badge badge-blue">
+                  ${escapar(plano)}
+                </span>
+              </td>
+
+              <td>
+                ${
+                  bloqueado
+                    ? '<span class="badge badge-red">Bloqueado</span>'
+                    : '<span class="badge badge-green">Ativo</span>'
+                }
+              </td>
+
+              <td>
+
+                <button
+                  class="btn btn-small"
+                  onclick="abrirEditorUsuario('${escapar(id)}')"
+                >
+                  ✏️ Editar
+                </button>
+
+              </td>
+
+            </tr>
+          `;
+
+        }).join('');
+    }
+
+
+    function filtrarUsuarios() {
+
+      const value =
+        document
+          .getElementById('userSearch')
+          .value
+          .toLowerCase()
+          .trim();
+
+      if (!value) {
+
+        renderizarUsuarios();
+
+        return;
+      }
+
+      const filtrados =
+        adminUsers.filter(user => {
+
+          const texto = [
+            user.username,
+            user.email,
+            user.id,
+            user.plano
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+
+          return texto.includes(value);
+
+        });
+
+      renderizarUsuarios(filtrados);
+    }
+
+
+    function abrirEditorUsuario(id) {
+
+      const user =
+        adminUsers.find(
+          item => String(item.id) === String(id)
+        );
+
+      if (!user) {
+
+        toast(
+          'Usuário não encontrado.',
+          true
+        );
+
+        return;
+      }
+
+
+      document.getElementById('editUserId').value =
+        user.id || '';
+
+      document.getElementById('editUsername').value =
+        user.username || '';
+
+      document.getElementById('editEmail').value =
+        user.email || '';
+
+      document.getElementById('editPlan').value =
+        user.plano || '';
+
+      document.getElementById('editMinutes').value =
+        Number(user.minutos || 0);
+
+      document.getElementById('editBlocked').checked =
+        user.bloqueado === true ||
+        user.blocked === true;
+
+
+      document.getElementById('editUserCard').style.display =
+        'block';
+
+      document
+        .getElementById('editUserCard')
+        .scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+    }
+
+
+    function fecharEditorUsuario() {
+
+      document.getElementById('editUserCard').style.display =
+        'none';
+
+    }
+
+
+    async function salvarEdicaoUsuario() {
+
+      const id =
+        document.getElementById('editUserId').value;
+
+      if (!id) {
+
+        toast(
+          'Usuário inválido.',
+          true
+        );
+
+        return;
+      }
+
+
+      const dados = {
+
+        username:
+          document.getElementById('editUsername').value.trim(),
+
+        email:
+          document.getElementById('editEmail').value.trim(),
+
+        plano:
+          document.getElementById('editPlan').value.trim(),
+
+        minutos:
+          Number(
+            document.getElementById('editMinutes').value || 0
+          ),
+
+        bloqueado:
+          document.getElementById('editBlocked').checked
+
+      };
+
+
+      try {
+
+        await editarUsuarioAdmin(id, dados);
+
+        toast(
+          'Usuário atualizado com sucesso.'
+        );
+
+        fecharEditorUsuario();
+
+        await carregarUsuariosTela();
+
+        await carregarAdminDashboard();
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          'Não foi possível atualizar o usuário.',
+          true
+        );
+
+      }
+
+    }
+
+
+    async function adicionarMinutosTela() {
+
+      const id =
+        document
+          .getElementById('giftUserId')
+          .value
+          .trim();
+
+      const quantidade =
+        Number(
+          document
+            .getElementById('giftMinutes')
+            .value
+        );
+
+
+      if (!id) {
+
+        toast(
+          'Informe o ID do usuário.',
+          true
+        );
+
+        return;
+      }
+
+
+      if (!Number.isFinite(quantidade) || quantidade <= 0) {
+
+        toast(
+          'Informe uma quantidade válida.',
+          true
+        );
+
+        return;
+      }
+
+
+      try {
+
+        await adicionarMinutosAdmin(
+          id,
+          quantidade
+        );
+
+        toast(
+          'Minutos adicionados com sucesso.'
+        );
+
+        document.getElementById('giftMinutes').value =
+          '';
+
+        await carregarUsuariosTela();
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          'Não foi possível adicionar minutos.',
+          true
+        );
+
+      }
+
+    }
+
+
+    async function carregarPacotesTela() {
+
+      try {
+
+        adminPackages =
+          await carregarPacotesAdmin();
+
+        renderizarPacotesAdmin();
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          'Erro ao carregar pacotes.',
+          true
+        );
+
+      }
+
+    }
+
+
+    function renderizarPacotesAdmin() {
+
+      const container =
+        document.getElementById('adminPackages');
+
+      if (!container) return;
+
+
+      if (!adminPackages.length) {
+
+        container.innerHTML =
+          '<div class="empty">Nenhum pacote cadastrado.</div>';
+
+        return;
+      }
+
+
+      container.innerHTML =
+        adminPackages.map(p => {
+
+          const id =
+            p.id || '';
+
+          const nome =
+            p.nome || p.name || 'Pacote';
+
+          const preco =
+            Number(p.preco || p.price || 0);
+
+          const mins =
+            Number(p.minutos || 0);
+
+          const ativo =
+            p.ativo !== false;
+
+          return `
+
+            <div class="package-card">
+
+              <h3>
+                ${escapar(nome)}
+              </h3>
+
+              <div class="package-price">
+                ${moeda(preco)}
+              </div>
+
+              <div class="package-minutes">
+                ⏱️ ${escapar(minutos(mins))}
+              </div>
+
+              <div class="package-description">
+                ${escapar(p.descricao || '')}
+              </div>
+
+              <div style="margin-bottom:12px">
+                ${
+                  ativo
+                    ? '<span class="badge badge-green">Ativo</span>'
+                    : '<span class="badge badge-red">Inativo</span>'
+                }
+              </div>
+
+              <button
+                class="btn btn-small"
+                onclick="abrirEditorPacote('${escapar(id)}')"
+              >
+                ✏️ Editar
+              </button>
+
+            </div>
+
+          `;
+
+        }).join('');
+    }
+
+
+    function novoPacote() {
+
+      document.getElementById('packageEditorTitle').textContent =
+        '📦 Novo pacote';
+
+      document.getElementById('packageId').value =
+        '';
+
+      document.getElementById('packageName').value =
+        '';
+
+      document.getElementById('packageMinutes').value =
+        '';
+
+      document.getElementById('packagePrice').value =
+        '';
+
+      document.getElementById('packageDescription').value =
+        '';
+
+      document.getElementById('packageOrder').value =
+        '0';
+
+      document.getElementById('packageActive').checked =
+        true;
+
+      document.getElementById('deletePackageButton').style.display =
+        'none';
+
+      document.getElementById('packageEditor').style.display =
+        'block';
+
+      document
+        .getElementById('packageEditor')
+        .scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+    }
+
+
+    function abrirEditorPacote(id) {
+
+      const p =
+        adminPackages.find(
+          item => String(item.id) === String(id)
+        );
+
+      if (!p) {
+
+        toast(
+          'Pacote não encontrado.',
+          true
+        );
+
+        return;
+      }
+
+
+      document.getElementById('packageEditorTitle').textContent =
+        '✏️ Editar pacote';
+
+      document.getElementById('packageId').value =
+        p.id || '';
+
+      document.getElementById('packageName').value =
+        p.nome || p.name || '';
+
+      document.getElementById('packageMinutes').value =
+        Number(p.minutos || 0);
+
+      document.getElementById('packagePrice').value =
+        Number(p.preco || p.price || 0);
+
+      document.getElementById('packageDescription').value =
+        p.descricao || p.description || '';
+
+      document.getElementById('packageOrder').value =
+        Number(p.ordem || 0);
+
+      document.getElementById('packageActive').checked =
+        p.ativo !== false;
+
+      document.getElementById('deletePackageButton').style.display =
+        'inline-block';
+
+      document.getElementById('packageEditor').style.display =
+        'block';
+
+      document
+        .getElementById('packageEditor')
+        .scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+    }
+
+
+    function fecharEditorPacote() {
+
+      document.getElementById('packageEditor').style.display =
+        'none';
+
+    }
+
+
+    async function salvarPacoteTela() {
+
+      const id =
+        document.getElementById('packageId').value;
+
+
+      const dados = {
+
+        nome:
+          document
+            .getElementById('packageName')
+            .value
+            .trim(),
+
+        minutos:
+          Number(
+            document
+              .getElementById('packageMinutes')
+              .value
+          ),
+
+        preco:
+          Number(
+            document
+              .getElementById('packagePrice')
+              .value
+          ),
+
+        descricao:
+          document
+            .getElementById('packageDescription')
+            .value
+            .trim(),
+
+        ativo:
+          document
+            .getElementById('packageActive')
+            .checked,
+
+        ordem:
+          Number(
+            document
+              .getElementById('packageOrder')
+              .value || 0
+          )
+
+      };
+
+
+      if (!dados.nome) {
+
+        toast(
+          'Informe o nome do pacote.',
+          true
+        );
+
+        return;
+      }
+
+
+      if (
+        !Number.isFinite(dados.minutos) ||
+        dados.minutos <= 0
+      ) {
+
+        toast(
+          'Informe uma quantidade válida de minutos.',
+          true
+        );
+
+        return;
+      }
+
+
+      if (
+        !Number.isFinite(dados.preco) ||
+        dados.preco < 0
+      ) {
+
+        toast(
+          'Informe um preço válido.',
+          true
+        );
+
+        return;
+      }
+
+
+      try {
+
+        if (id) {
+
+          await editarPacoteAdmin(
+            id,
+            dados
+          );
+
+          toast(
+            'Pacote atualizado com sucesso.'
+          );
+
+        } else {
+
+          await criarPacoteAdmin(
+            dados
+          );
+
+          toast(
+            'Pacote criado com sucesso.'
+          );
+
+        }
+
+
+        fecharEditorPacote();
+
+        await carregarPacotesTela();
+
+        await carregarDashboardTela();
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          'Erro ao salvar pacote.',
+          true
+        );
+
+      }
+
+    }
+
+
+    async function excluirPacoteAtual() {
+
+      const id =
+        document.getElementById('packageId').value;
+
+      if (!id) return;
+
+
+      if (
+        !confirm(
+          'Tem certeza que deseja excluir este pacote?'
+        )
+      ) {
+        return;
+      }
+
+
+      try {
+
+        await excluirPacoteAdmin(id);
+
+        toast(
+          'Pacote excluído com sucesso.'
+        );
+
+        fecharEditorPacote();
+
+        await carregarPacotesTela();
+
+        await carregarDashboardTela();
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          'Não foi possível excluir o pacote.',
+          true
+        );
+
+      }
+
+    }
+
+
+    async function carregarPedidosTela() {
+
+      try {
+
+        adminOrders =
+          await carregarPedidosAdmin();
+
+        renderizarPedidos();
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          'Erro ao carregar pedidos.',
+          true
+        );
+
+      }
+
+    }
+
+
+    function renderizarPedidos() {
+
+      const tbody =
+        document.getElementById('ordersTable');
+
+      if (!tbody) return;
+
+
+      if (!adminOrders.length) {
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="empty">
+              Nenhum pedido encontrado.
+            </td>
+          </tr>
+        `;
+
+        return;
+      }
+
+
+      tbody.innerHTML =
+        adminOrders.map(order => {
+
+          const id =
+            order.id || order.pedido_id || '-';
+
+          const username =
+            order.username ||
+            order.usuario_username ||
+            order.user ||
+            '-';
+
+          const valor =
+            Number(
+              order.valor ||
+              order.amount ||
+              0
+            );
+
+          const status =
+            String(
+              order.status || 'pendente'
+            ).toLowerCase();
+
+          const data =
+            order.created_at
+              ? new Date(order.created_at)
+                  .toLocaleString('pt-BR')
+              : '-';
+
+
+          let classe =
+            'badge-yellow';
+
+          if (
+            status === 'paid' ||
+            status === 'pago' ||
+            status === 'approved' ||
+            status === 'aprovado'
+          ) {
+            classe = 'badge-green';
+          }
+
+          if (
+            status === 'cancelado' ||
+            status === 'cancelled' ||
+            status === 'failed' ||
+            status === 'falhou'
+          ) {
+            classe = 'badge-red';
+          }
+
+
+          return `
+
+            <tr>
+
+              <td>
+                <strong>
+                  ${escapar(id)}
+                </strong>
+              </td>
+
+              <td>
+                ${escapar(username)}
+              </td>
+
+              <td>
+                ${moeda(valor)}
+              </td>
+
+              <td>
+                <span class="badge ${classe}">
+                  ${escapar(status)}
+                </span>
+              </td>
+
+              <td>
+                ${escapar(data)}
+              </td>
+
+            </tr>
+
+          `;
+
+        }).join('');
+    }
+
+
+    async function carregarPagamentoTela() {
+
+      try {
+
+        const config =
+          await carregarConfiguracaoPagamento();
+
+        if (!config) return;
+
+
+        const ativo =
+          config.infinitepay_ativo === true;
+
+        const handle =
+          config.infinitepay_handle || '';
+
+
+        document.getElementById(
+          'infinitepayActive'
+        ).checked = ativo;
+
+
+        document.getElementById(
+          'infinitepayHandle'
+        ).value = handle;
+
+
+        document.getElementById(
+          'pixActive'
+        ).checked =
+          config.pix_ativo !== false;
+
+
+        document.getElementById(
+          'cardActive'
+        ).checked =
+          config.cartao_ativo !== false;
+
+
+        atualizarHandlePreview(handle);
+
+
+        const status =
+          document.getElementById(
+            'configPaymentStatus'
+          );
+
+        if (status) {
+
+          status.textContent =
+            ativo ? 'ATIVO' : 'INATIVO';
+
+          status.className =
+            'badge ' +
+            (
+              ativo
+                ? 'badge-green'
+                : 'badge-red'
+            );
+
+        }
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          'Erro ao carregar InfinitePay.',
+          true
+        );
+
+      }
+
+    }
+
+
+    function atualizarHandlePreview(handle) {
+
+      const node =
+        document.getElementById(
+          'paymentHandlePreview'
+        );
+
+      if (!node) return;
+
+
+      node.textContent =
+        handle
+          ? 'Handle: ' + handle
+          : 'Handle: não configurado';
+
+    }
+
+
+    async function salvarInfinitePayTela() {
+
+      const handle =
+        document
+          .getElementById('infinitepayHandle')
+          .value
+          .trim();
+
+
+      const dados = {
+
+        infinitepay_ativo:
+          document
+            .getElementById('infinitepayActive')
+            .checked,
+
+        infinitepay_handle:
+          handle,
+
+        pix_ativo:
+          document
+            .getElementById('pixActive')
+            .checked,
+
+        cartao_ativo:
+          document
+            .getElementById('cardActive')
+            .checked
+
+      };
+
+
+      if (
+        dados.infinitepay_ativo &&
+        !dados.infinitepay_handle
+      ) {
+
+        toast(
+          'Informe o Handle da InfinitePay antes de ativar.',
+          true
+        );
+
+        return;
+      }
+
+
+      try {
+
+        await salvarConfiguracaoPagamento(
+          dados
+        );
+
+        atualizarHandlePreview(
+          handle
+        );
+
+        const status =
+          document.getElementById(
+            'configPaymentStatus'
+          );
+
+        if (status) {
+
+          status.textContent =
+            dados.infinitepay_ativo
+              ? 'ATIVO'
+              : 'INATIVO';
+
+          status.className =
+            'badge ' +
+            (
+              dados.infinitepay_ativo
+                ? 'badge-green'
+                : 'badge-red'
+            );
+
+        }
+
+        toast(
+          'Configuração da InfinitePay salva.'
+        );
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          'Erro ao salvar configuração.',
+          true
+        );
+
+      }
+
+    }
+
+
+    async function testarInfinitePay() {
+
+      try {
+
+        const config =
+          await carregarConfiguracaoPagamento();
+
+        if (!config) return;
+
+
+        if (!config.infinitepay_handle) {
+
+          toast(
+            'O Handle da InfinitePay ainda não foi configurado.',
+            true
+          );
+
+          return;
+        }
+
+
+        toast(
+          'Configuração encontrada: Handle ' +
+          config.infinitepay_handle
+        );
+
+      } catch (error) {
+
+        toast(
+          error.message ||
+          'Não foi possível verificar.',
+          true
+        );
+
+      }
+
+    }
+
+
+    async function atualizarTudo() {
+
+      toast(
+        'Atualizando dados...'
+      );
+
+      await Promise.allSettled([
+
+        carregarAdminDashboard(),
+
+        carregarUsuariosTela(),
+
+        carregarPacotesTela(),
+
+        carregarPedidosTela(),
+
+        carregarPagamentoTela()
+
+      ]);
+
+      toast(
+        'Dados atualizados.'
+      );
+
+    }
+
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      async () => {
+
+        const permitido =
+          await verificarAdmin();
+
+        if (!permitido) return;
+
+        await carregarDashboardTela();
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
