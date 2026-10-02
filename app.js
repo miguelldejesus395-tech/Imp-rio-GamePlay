@@ -1342,7 +1342,7 @@ document.addEventListener(
             );
 
           try {
-            await registrar(event);
+            await fazerLogin(event);
           } catch (error) {
             message(
               error.message ||
