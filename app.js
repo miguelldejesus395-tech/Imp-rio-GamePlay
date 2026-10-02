@@ -261,7 +261,7 @@ async function registrar(event) {
   }
 
   try {
-    const data = await api('/users/register', {
+    const data = await api('/register', {
       method: 'POST',
       body: JSON.stringify({
         username,
