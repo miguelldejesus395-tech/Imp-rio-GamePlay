@@ -23,7 +23,10 @@ function show(page) {
 }
 
 function message(text, isError = false) {
-  const node = el('message');
+  const node =
+    el('message') ||
+    el('messageRegister') ||
+    el('messageLogin');
 
   if (!node) {
     if (text) alert(text);
@@ -66,7 +69,11 @@ async function api(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(data.error || data.message || 'Erro na comunicação com o servidor.');
+    throw new Error(
+      data.error ||
+      data.message ||
+      'Erro na comunicação com o servidor.'
+    );
   }
 
   return data;
@@ -193,10 +200,16 @@ async function fazerLogin(event) {
     });
 
     if (!data.token) {
-      throw new Error('O servidor não retornou um token de sessão.');
+      throw new Error(
+        'O servidor não retornou um token de sessão.'
+      );
     }
 
-    salvarSessao(data.token, data.role || 'user', lembrar);
+    salvarSessao(
+      data.token,
+      data.role || 'user',
+      lembrar
+    );
 
     message('Login realizado com sucesso.');
 
@@ -209,7 +222,11 @@ async function fazerLogin(event) {
     }, 300);
 
   } catch (error) {
-    message(error.message || 'E-mail/usuário ou senha incorretos.', true);
+    message(
+      error.message ||
+      'E-mail/usuário ou senha incorretos.',
+      true
+    );
   }
 }
 
@@ -240,27 +257,68 @@ async function registrar(event) {
     el('registerConfirmPassword') ||
     el('regConfirmPassword');
 
-  const username = usernameInput ? usernameInput.value.trim() : '';
-  const email = emailInput ? emailInput.value.trim() : '';
-  const password = passwordInput ? passwordInput.value : '';
-  const confirm = confirmInput ? confirmInput.value : password;
+  const username =
+    usernameInput
+      ? usernameInput.value.trim()
+      : '';
+
+  const email =
+    emailInput
+      ? emailInput.value.trim()
+      : '';
+
+  const password =
+    passwordInput
+      ? passwordInput.value
+      : '';
+
+  const confirm =
+    confirmInput
+      ? confirmInput.value
+      : password;
 
   if (!username || !email || !password) {
-    message('Preencha usuário, e-mail e senha.', true);
+    message(
+      'Preencha usuário, e-mail e senha.',
+      true
+    );
+    return;
+  }
+
+  if (username.length < 3) {
+    message(
+      'O usuário deve ter pelo menos 3 caracteres.',
+      true
+    );
     return;
   }
 
   if (password.length < 6) {
-    message('A senha deve ter pelo menos 6 caracteres.', true);
+    message(
+      'A senha deve ter pelo menos 6 caracteres.',
+      true
+    );
     return;
   }
 
   if (password !== confirm) {
-    message('As senhas não conferem.', true);
+    message(
+      'As senhas não conferem.',
+      true
+    );
     return;
   }
 
   try {
+    message('Criando sua conta...');
+
+    /*
+      IMPORTANTE:
+      O backend usa POST /api/register.
+      Como api() já adiciona /api,
+      aqui usamos somente /register.
+    */
+
     const data = await api('/register', {
       method: 'POST',
       body: JSON.stringify({
@@ -270,14 +328,21 @@ async function registrar(event) {
       })
     });
 
-    message(data.message || 'Conta criada com sucesso.');
+    message(
+      data.message ||
+      'Conta criada com sucesso!'
+    );
 
     setTimeout(() => {
       show('login');
-    }, 500);
+    }, 800);
 
   } catch (error) {
-    message(error.message || 'Não foi possível criar a conta.', true);
+    message(
+      error.message ||
+      'Não foi possível criar a conta.',
+      true
+    );
   }
 }
 
@@ -294,11 +359,16 @@ async function carregarUsuario() {
 
   try {
     const data = await obterUsuario();
-    const usuario = data.user || data.usuario || data;
+
+    const usuario =
+      data.user ||
+      data.usuario ||
+      data;
 
     preencherDadosUsuario(usuario);
 
     return usuario;
+
   } catch (error) {
     limparSessao();
     window.location.href = 'index.html';
@@ -315,9 +385,16 @@ function preencherDadosUsuario(usuario) {
     usuario.user ||
     'Usuário';
 
-  const email = usuario.email || '';
-  const minutos = Number(usuario.minutos || 0);
-  const plano = usuario.plano || 'Nenhum';
+  const email =
+    usuario.email ||
+    '';
+
+  const minutos =
+    Number(usuario.minutos || 0);
+
+  const plano =
+    usuario.plano ||
+    'Nenhum';
 
   const elementosNome = [
     'userName',
@@ -328,7 +405,10 @@ function preencherDadosUsuario(usuario) {
 
   elementosNome.forEach(id => {
     const node = el(id);
-    if (node) node.textContent = nome;
+
+    if (node) {
+      node.textContent = nome;
+    }
   });
 
   const elementosEmail = [
@@ -339,7 +419,10 @@ function preencherDadosUsuario(usuario) {
 
   elementosEmail.forEach(id => {
     const node = el(id);
-    if (node) node.textContent = email;
+
+    if (node) {
+      node.textContent = email;
+    }
   });
 
   const elementosMinutos = [
@@ -352,8 +435,10 @@ function preencherDadosUsuario(usuario) {
 
   elementosMinutos.forEach(id => {
     const node = el(id);
+
     if (node) {
-      node.textContent = formatarMinutos(minutos);
+      node.textContent =
+        formatarMinutos(minutos);
     }
   });
 
@@ -366,7 +451,10 @@ function preencherDadosUsuario(usuario) {
 
   elementosPlano.forEach(id => {
     const node = el(id);
-    if (node) node.textContent = plano;
+
+    if (node) {
+      node.textContent = plano;
+    }
   });
 }
 
@@ -377,7 +465,11 @@ function preencherDadosUsuario(usuario) {
 async function carregarPacotes() {
   try {
     const data = await api('/packages');
-    const pacotes = data.packages || data.pacotes || [];
+
+    const pacotes =
+      data.packages ||
+      data.pacotes ||
+      [];
 
     window.IGC_PACKAGES = pacotes;
 
@@ -388,13 +480,21 @@ async function carregarPacotes() {
     );
 
     return pacotes;
+
   } catch (error) {
-    console.error('Erro ao carregar pacotes:', error);
+    console.error(
+      'Erro ao carregar pacotes:',
+      error
+    );
+
     return [];
   }
 }
 
-function renderizarPacotes(container, pacotes) {
+function renderizarPacotes(
+  container,
+  pacotes
+) {
   if (!container) return;
 
   if (!pacotes.length) {
@@ -403,36 +503,59 @@ function renderizarPacotes(container, pacotes) {
         Nenhum pacote disponível no momento.
       </div>
     `;
+
     return;
   }
 
-  container.innerHTML = pacotes.map(pacote => `
-    <article class="package-card" data-package-id="${escaparHTML(pacote.id)}">
-      <div class="package-name">
-        ${escaparHTML(pacote.nome || pacote.name || 'Pacote')}
-      </div>
-
-      <div class="package-price">
-        ${formatarMoeda(pacote.preco ?? pacote.price ?? 0)}
-      </div>
-
-      <div class="package-minutes">
-        ${escaparHTML(formatarMinutos(pacote.minutos || 0))}
-      </div>
-
-      <div class="package-description">
-        ${escaparHTML(pacote.descricao || pacote.description || '')}
-      </div>
-
-      <button
-        type="button"
-        class="btn-buy"
-        onclick="comprarPacote('${escaparHTML(pacote.id)}')"
+  container.innerHTML =
+    pacotes.map(pacote => `
+      <article
+        class="package-card"
+        data-package-id="${escaparHTML(pacote.id)}"
       >
-        Comprar
-      </button>
-    </article>
-  `).join('');
+
+        <div class="package-name">
+          ${escaparHTML(
+            pacote.nome ||
+            pacote.name ||
+            'Pacote'
+          )}
+        </div>
+
+        <div class="package-price">
+          ${formatarMoeda(
+            pacote.preco ??
+            pacote.price ??
+            0
+          )}
+        </div>
+
+        <div class="package-minutes">
+          ${escaparHTML(
+            formatarMinutos(
+              pacote.minutos || 0
+            )
+          )}
+        </div>
+
+        <div class="package-description">
+          ${escaparHTML(
+            pacote.descricao ||
+            pacote.description ||
+            ''
+          )}
+        </div>
+
+        <button
+          type="button"
+          class="btn-buy"
+          onclick="comprarPacote('${escaparHTML(pacote.id)}')"
+        >
+          Comprar
+        </button>
+
+      </article>
+    `).join('');
 }
 
 /* =========================================================
@@ -443,12 +566,18 @@ async function comprarPacote(pacoteId) {
   if (!verificarAutenticacao()) return;
 
   if (!pacoteId) {
-    message('Pacote inválido.', true);
+    message(
+      'Pacote inválido.',
+      true
+    );
+
     return;
   }
 
   try {
-    message('Preparando pagamento...');
+    message(
+      'Preparando pagamento...'
+    );
 
     const data = await api('/orders', {
       method: 'POST',
@@ -458,12 +587,16 @@ async function comprarPacote(pacoteId) {
     });
 
     if (data.checkout_url) {
-      window.location.href = data.checkout_url;
+      window.location.href =
+        data.checkout_url;
+
       return;
     }
 
     if (data.url) {
-      window.location.href = data.url;
+      window.location.href =
+        data.url;
+
       return;
     }
 
@@ -473,7 +606,11 @@ async function comprarPacote(pacoteId) {
     );
 
   } catch (error) {
-    message(error.message || 'Não foi possível iniciar o pagamento.', true);
+    message(
+      error.message ||
+      'Não foi possível iniciar o pagamento.',
+      true
+    );
   }
 }
 
@@ -482,14 +619,21 @@ async function comprarPacote(pacoteId) {
 ========================================================= */
 
 async function carregarPedidos() {
-  if (!verificarAutenticacao()) return [];
+  if (!verificarAutenticacao()) {
+    return [];
+  }
 
   try {
-    const data = await api('/orders');
+    const data =
+      await api('/orders');
 
-    const pedidos = data.orders || data.pedidos || [];
+    const pedidos =
+      data.orders ||
+      data.pedidos ||
+      [];
 
-    window.IGC_ORDERS = pedidos;
+    window.IGC_ORDERS =
+      pedidos;
 
     document.dispatchEvent(
       new CustomEvent('igc:orders', {
@@ -498,8 +642,13 @@ async function carregarPedidos() {
     );
 
     return pedidos;
+
   } catch (error) {
-    console.error('Erro ao carregar pedidos:', error);
+    console.error(
+      'Erro ao carregar pedidos:',
+      error
+    );
+
     return [];
   }
 }
@@ -509,13 +658,17 @@ async function carregarPedidos() {
 ========================================================= */
 
 async function iniciarPainelUsuario() {
-  if (!verificarAutenticacao()) return;
+  if (!verificarAutenticacao()) {
+    return;
+  }
 
-  const usuario = await carregarUsuario();
+  const usuario =
+    await carregarUsuario();
 
   if (!usuario) return;
 
-  const pacotes = await carregarPacotes();
+  const pacotes =
+    await carregarPacotes();
 
   const packageContainer =
     el('packages') ||
@@ -524,7 +677,10 @@ async function iniciarPainelUsuario() {
     el('pacotes');
 
   if (packageContainer) {
-    renderizarPacotes(packageContainer, pacotes);
+    renderizarPacotes(
+      packageContainer,
+      pacotes
+    );
   }
 
   await carregarPedidos();
@@ -537,7 +693,10 @@ async function iniciarPainelUsuario() {
 ========================================================= */
 
 function verificarRetornoPagamento() {
-  const params = new URLSearchParams(window.location.search);
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
 
   const status = (
     params.get('pagamento') ||
@@ -562,20 +721,28 @@ function verificarRetornoPagamento() {
 ========================================================= */
 
 async function verificarAdmin() {
-  if (!verificarAutenticacao()) return false;
+  if (!verificarAutenticacao()) {
+    return false;
+  }
 
   if (role !== 'admin') {
     try {
-      const data = await obterUsuario();
+      const data =
+        await obterUsuario();
 
       if (data.role !== 'admin') {
-        window.location.href = 'usuario.html';
+        window.location.href =
+          'usuario.html';
+
         return false;
       }
 
       role = 'admin';
+
     } catch (_) {
-      window.location.href = 'index.html';
+      window.location.href =
+        'index.html';
+
       return false;
     }
   }
@@ -584,18 +751,28 @@ async function verificarAdmin() {
 }
 
 async function carregarAdminDashboard() {
-  if (!(await verificarAdmin())) return null;
+  if (!(await verificarAdmin())) {
+    return null;
+  }
 
   try {
-    const data = await api('/admin/dashboard');
+    const data =
+      await api('/admin/dashboard');
 
-    window.IGC_ADMIN_DASHBOARD = data;
+    window.IGC_ADMIN_DASHBOARD =
+      data;
 
     preencherDashboardAdmin(data);
 
     return data;
+
   } catch (error) {
-    message(error.message || 'Erro ao carregar painel administrativo.', true);
+    message(
+      error.message ||
+      'Erro ao carregar painel administrativo.',
+      true
+    );
+
     return null;
   }
 }
@@ -603,7 +780,9 @@ async function carregarAdminDashboard() {
 function preencherDashboardAdmin(data) {
   if (!data) return;
 
-  const stats = data.stats || data;
+  const stats =
+    data.stats ||
+    data;
 
   const valores = {
     totalUsers:
@@ -628,74 +807,120 @@ function preencherDashboardAdmin(data) {
       0
   };
 
-  Object.entries(valores).forEach(([id, value]) => {
-    const node = el(id);
+  Object.entries(valores)
+    .forEach(([id, value]) => {
+      const node = el(id);
 
-    if (node) {
-      node.textContent =
-        id === 'sales'
-          ? formatarMoeda(value)
-          : String(value);
-    }
-  });
+      if (node) {
+        node.textContent =
+          id === 'sales'
+            ? formatarMoeda(value)
+            : String(value);
+      }
+    });
 }
 
 async function carregarUsuariosAdmin() {
-  if (!(await verificarAdmin())) return [];
+  if (!(await verificarAdmin())) {
+    return [];
+  }
 
   try {
-    const data = await api('/admin/users');
+    const data =
+      await api('/admin/users');
 
-    const usuarios = data.users || data.usuarios || [];
+    const usuarios =
+      data.users ||
+      data.usuarios ||
+      [];
 
-    window.IGC_ADMIN_USERS = usuarios;
+    window.IGC_ADMIN_USERS =
+      usuarios;
 
     document.dispatchEvent(
-      new CustomEvent('igc:admin-users', {
-        detail: usuarios
-      })
+      new CustomEvent(
+        'igc:admin-users',
+        {
+          detail: usuarios
+        }
+      )
     );
 
     return usuarios;
+
   } catch (error) {
-    message(error.message || 'Erro ao carregar usuários.', true);
+    message(
+      error.message ||
+      'Erro ao carregar usuários.',
+      true
+    );
+
     return [];
   }
 }
 
-async function editarUsuarioAdmin(id, dados) {
-  if (!(await verificarAdmin())) return null;
+async function editarUsuarioAdmin(
+  id,
+  dados
+) {
+  if (!(await verificarAdmin())) {
+    return null;
+  }
 
-  return api(`/admin/users/${encodeURIComponent(id)}`, {
-    method: 'PUT',
-    body: JSON.stringify(dados)
-  });
+  return api(
+    `/admin/users/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(dados)
+    }
+  );
 }
 
-async function adicionarMinutosAdmin(id, minutos) {
-  if (!(await verificarAdmin())) return null;
+async function adicionarMinutosAdmin(
+  id,
+  minutos
+) {
+  if (!(await verificarAdmin())) {
+    return null;
+  }
 
-  return api(`/admin/users/${encodeURIComponent(id)}/minutes`, {
-    method: 'POST',
-    body: JSON.stringify({
-      minutos: Number(minutos)
-    })
-  });
+  return api(
+    `/admin/users/${encodeURIComponent(id)}/minutes`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        minutos: Number(minutos)
+      })
+    }
+  );
 }
 
 async function carregarPedidosAdmin() {
-  if (!(await verificarAdmin())) return [];
+  if (!(await verificarAdmin())) {
+    return [];
+  }
 
   try {
-    const data = await api('/admin/orders');
+    const data =
+      await api('/admin/orders');
 
-    const pedidos = data.orders || data.pedidos || [];
+    const pedidos =
+      data.orders ||
+      data.pedidos ||
+      [];
 
-    window.IGC_ADMIN_ORDERS = pedidos;
+    window.IGC_ADMIN_ORDERS =
+      pedidos;
 
     return pedidos;
+
   } catch (error) {
-    message(error.message || 'Erro ao carregar pedidos.', true);
+    message(
+      error.message ||
+      'Erro ao carregar pedidos.',
+      true
+    );
+
     return [];
   }
 }
@@ -705,24 +930,41 @@ async function carregarPedidosAdmin() {
 ========================================================= */
 
 async function carregarPacotesAdmin() {
-  if (!(await verificarAdmin())) return [];
+  if (!(await verificarAdmin())) {
+    return [];
+  }
 
   try {
-    const data = await api('/admin/packages');
+    const data =
+      await api('/admin/packages');
 
-    const pacotes = data.packages || data.pacotes || [];
+    const pacotes =
+      data.packages ||
+      data.pacotes ||
+      [];
 
-    window.IGC_ADMIN_PACKAGES = pacotes;
+    window.IGC_ADMIN_PACKAGES =
+      pacotes;
 
     return pacotes;
+
   } catch (error) {
-    message(error.message || 'Erro ao carregar pacotes.', true);
+    message(
+      error.message ||
+      'Erro ao carregar pacotes.',
+      true
+    );
+
     return [];
   }
 }
 
-async function criarPacoteAdmin(dados) {
-  if (!(await verificarAdmin())) return null;
+async function criarPacoteAdmin(
+  dados
+) {
+  if (!(await verificarAdmin())) {
+    return null;
+  }
 
   return api('/admin/packages', {
     method: 'POST',
@@ -730,21 +972,36 @@ async function criarPacoteAdmin(dados) {
   });
 }
 
-async function editarPacoteAdmin(id, dados) {
-  if (!(await verificarAdmin())) return null;
+async function editarPacoteAdmin(
+  id,
+  dados
+) {
+  if (!(await verificarAdmin())) {
+    return null;
+  }
 
-  return api(`/admin/packages/${encodeURIComponent(id)}`, {
-    method: 'PUT',
-    body: JSON.stringify(dados)
-  });
+  return api(
+    `/admin/packages/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(dados)
+    }
+  );
 }
 
-async function excluirPacoteAdmin(id) {
-  if (!(await verificarAdmin())) return null;
+async function excluirPacoteAdmin(
+  id
+) {
+  if (!(await verificarAdmin())) {
+    return null;
+  }
 
-  return api(`/admin/packages/${encodeURIComponent(id)}`, {
-    method: 'DELETE'
-  });
+  return api(
+    `/admin/packages/${encodeURIComponent(id)}`,
+    {
+      method: 'DELETE'
+    }
+  );
 }
 
 /* =========================================================
@@ -752,10 +1009,13 @@ async function excluirPacoteAdmin(id) {
 ========================================================= */
 
 async function carregarConfiguracaoPagamento() {
-  if (!(await verificarAdmin())) return null;
+  if (!(await verificarAdmin())) {
+    return null;
+  }
 
   try {
-    const data = await api('/admin/payment-config');
+    const data =
+      await api('/admin/payment-config');
 
     window.IGC_PAYMENT_CONFIG =
       data.config ||
@@ -763,37 +1023,53 @@ async function carregarConfiguracaoPagamento() {
       data;
 
     return window.IGC_PAYMENT_CONFIG;
+
   } catch (error) {
     message(
-      error.message || 'Erro ao carregar configuração de pagamento.',
+      error.message ||
+      'Erro ao carregar configuração de pagamento.',
       true
     );
+
     return null;
   }
 }
 
-async function salvarConfiguracaoPagamento(dados) {
-  if (!(await verificarAdmin())) return null;
+async function salvarConfiguracaoPagamento(
+  dados
+) {
+  if (!(await verificarAdmin())) {
+    return null;
+  }
 
   try {
-    const data = await api('/admin/payment-config', {
-      method: 'PUT',
-      body: JSON.stringify(dados)
-    });
+    const data =
+      await api(
+        '/admin/payment-config',
+        {
+          method: 'PUT',
+          body: JSON.stringify(dados)
+        }
+      );
 
     window.IGC_PAYMENT_CONFIG =
       data.config ||
       data.configuration ||
       data;
 
-    message('Configuração de pagamento salva.');
+    message(
+      'Configuração de pagamento salva.'
+    );
 
     return data;
+
   } catch (error) {
     message(
-      error.message || 'Não foi possível salvar a configuração.',
+      error.message ||
+      'Não foi possível salvar a configuração.',
       true
     );
+
     return null;
   }
 }
@@ -802,65 +1078,137 @@ async function salvarConfiguracaoPagamento(dados) {
    UTILITÁRIOS PARA FORMULÁRIOS
 ========================================================= */
 
-function pegarValor(id, fallback = '') {
+function pegarValor(
+  id,
+  fallback = ''
+) {
   const node = el(id);
-  return node ? node.value : fallback;
+
+  return node
+    ? node.value
+    : fallback;
 }
 
-function pegarNumero(id, fallback = 0) {
-  const value = Number(pegarValor(id, fallback));
-  return Number.isFinite(value) ? value : fallback;
+function pegarNumero(
+  id,
+  fallback = 0
+) {
+  const value =
+    Number(
+      pegarValor(id, fallback)
+    );
+
+  return Number.isFinite(value)
+    ? value
+    : fallback;
 }
 
-function pegarCheckbox(id, fallback = false) {
+function pegarCheckbox(
+  id,
+  fallback = false
+) {
   const node = el(id);
-  return node ? !!node.checked : fallback;
+
+  return node
+    ? !!node.checked
+    : fallback;
 }
 
 /* =========================================================
    FORMULÁRIO DE PACOTE ADMIN
 ========================================================= */
 
-async function salvarPacoteDoFormulario(id = null) {
+async function salvarPacoteDoFormulario(
+  id = null
+) {
   const dados = {
-    nome: pegarValor('packageName', pegarValor('nomePacote')),
-    minutos: pegarNumero('packageMinutes', pegarNumero('minutosPacote')),
-    preco: pegarNumero('packagePrice', pegarNumero('precoPacote')),
+    nome: pegarValor(
+      'packageName',
+      pegarValor('nomePacote')
+    ),
+
+    minutos: pegarNumero(
+      'packageMinutes',
+      pegarNumero('minutosPacote')
+    ),
+
+    preco: pegarNumero(
+      'packagePrice',
+      pegarNumero('precoPacote')
+    ),
+
     descricao: pegarValor(
       'packageDescription',
       pegarValor('descricaoPacote')
     ),
-    ativo: pegarCheckbox('packageActive', true),
-    ordem: pegarNumero('packageOrder', 0)
+
+    ativo: pegarCheckbox(
+      'packageActive',
+      true
+    ),
+
+    ordem: pegarNumero(
+      'packageOrder',
+      0
+    )
   };
 
   if (!dados.nome) {
-    message('Informe o nome do pacote.', true);
+    message(
+      'Informe o nome do pacote.',
+      true
+    );
+
     return;
   }
 
   if (dados.minutos <= 0) {
-    message('Informe uma quantidade válida de minutos.', true);
+    message(
+      'Informe uma quantidade válida de minutos.',
+      true
+    );
+
     return;
   }
 
   if (dados.preco < 0) {
-    message('Informe um preço válido.', true);
+    message(
+      'Informe um preço válido.',
+      true
+    );
+
     return;
   }
 
   try {
     if (id) {
-      await editarPacoteAdmin(id, dados);
-      message('Pacote atualizado com sucesso.');
+      await editarPacoteAdmin(
+        id,
+        dados
+      );
+
+      message(
+        'Pacote atualizado com sucesso.'
+      );
+
     } else {
-      await criarPacoteAdmin(dados);
-      message('Pacote criado com sucesso.');
+      await criarPacoteAdmin(
+        dados
+      );
+
+      message(
+        'Pacote criado com sucesso.'
+      );
     }
 
     await carregarPacotesAdmin();
+
   } catch (error) {
-    message(error.message || 'Erro ao salvar pacote.', true);
+    message(
+      error.message ||
+      'Erro ao salvar pacote.',
+      true
+    );
   }
 }
 
@@ -870,85 +1218,121 @@ async function salvarPacoteDoFormulario(id = null) {
 
 async function salvarInfinitePay() {
   const dados = {
-    infinitepay_ativo: pegarCheckbox(
-      'infinitepayActive',
-      pegarCheckbox('infinitepayAtivo', false)
-    ),
+    infinitepay_ativo:
+      pegarCheckbox(
+        'infinitepayActive',
+        pegarCheckbox(
+          'infinitepayAtivo',
+          false
+        )
+      ),
 
-    infinitepay_handle: pegarValor(
-      'infinitepayHandle',
-      pegarValor('infinitepay_handle')
-    ).trim(),
+    infinitepay_handle:
+      pegarValor(
+        'infinitepayHandle',
+        pegarValor(
+          'infinitepay_handle'
+        )
+      ).trim(),
 
-    pix_ativo: pegarCheckbox(
-      'pixActive',
-      pegarCheckbox('pixAtivo', true)
-    ),
+    pix_ativo:
+      pegarCheckbox(
+        'pixActive',
+        pegarCheckbox(
+          'pixAtivo',
+          true
+        )
+      ),
 
-    cartao_ativo: pegarCheckbox(
-      'cardActive',
-      pegarCheckbox('cartaoAtivo', true)
-    )
+    cartao_ativo:
+      pegarCheckbox(
+        'cardActive',
+        pegarCheckbox(
+          'cartaoAtivo',
+          true
+        )
+      )
   };
 
-  await salvarConfiguracaoPagamento(dados);
+  await salvarConfiguracaoPagamento(
+    dados
+  );
 }
 
 /* =========================================================
    INICIALIZAÇÃO AUTOMÁTICA
 ========================================================= */
 
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm =
-    el('loginForm') ||
-    el('formLogin');
+document.addEventListener(
+  'DOMContentLoaded',
+  () => {
 
-  if (loginForm) {
-    loginForm.addEventListener('submit', fazerLogin);
-  }
+    const loginForm =
+      el('loginForm') ||
+      el('formLogin');
 
-  const registerForm =
-    el('registerForm') ||
-    el('formRegister') ||
-    el('cadastroForm');
+    if (loginForm) {
+      loginForm.addEventListener(
+        'submit',
+        fazerLogin
+      );
+    }
 
-  if (registerForm) {
-    registerForm.addEventListener('submit', registrar);
-  }
+    const registerForm =
+      el('registerForm') ||
+      el('formRegister') ||
+      el('cadastroForm');
 
-  const logoutButtons =
-    document.querySelectorAll(
-      '[data-action="logout"], .logout-button, #logout'
+    if (registerForm) {
+      registerForm.addEventListener(
+        'submit',
+        registrar
+      );
+    }
+
+    const logoutButtons =
+      document.querySelectorAll(
+        '[data-action="logout"], .logout-button, #logout'
+      );
+
+    logoutButtons.forEach(
+      button => {
+        button.addEventListener(
+          'click',
+          logout
+        );
+      }
     );
 
-  logoutButtons.forEach(button => {
-    button.addEventListener('click', logout);
-  });
+    if (
+      document.body &&
+      (
+        document.body.dataset.page === 'usuario' ||
+        window.location.pathname.endsWith(
+          'usuario.html'
+        )
+      )
+    ) {
+      iniciarPainelUsuario();
+    }
 
-  if (
-    document.body &&
-    (
-      document.body.dataset.page === 'usuario' ||
-      window.location.pathname.endsWith('usuario.html')
-    )
-  ) {
-    iniciarPainelUsuario();
+    if (
+      document.body &&
+      (
+        document.body.dataset.page === 'admin' ||
+        window.location.pathname.endsWith(
+          'admin.html'
+        )
+      )
+    ) {
+      carregarAdminDashboard();
+      carregarUsuariosAdmin();
+      carregarPedidosAdmin();
+      carregarPacotesAdmin();
+      carregarConfiguracaoPagamento();
+    }
   }
-
-  if (
-    document.body &&
-    (
-      document.body.dataset.page === 'admin' ||
-      window.location.pathname.endsWith('admin.html')
-    )
-  ) {
-    carregarAdminDashboard();
-    carregarUsuariosAdmin();
-    carregarPedidosAdmin();
-    carregarPacotesAdmin();
-    carregarConfiguracaoPagamento();
-  }
-});
+);
 
 /* =========================================================
    COMPATIBILIDADE COM HTML ANTIGO
@@ -959,25 +1343,45 @@ window.el = el;
 window.show = show;
 window.message = message;
 window.logout = logout;
-window.verificarAutenticacao = verificarAutenticacao;
+window.verificarAutenticacao =
+  verificarAutenticacao;
 window.fazerLogin = fazerLogin;
 window.registrar = registrar;
-window.carregarUsuario = carregarUsuario;
-window.carregarPacotes = carregarPacotes;
-window.comprarPacote = comprarPacote;
-window.carregarPedidos = carregarPedidos;
-window.carregarAdminDashboard = carregarAdminDashboard;
-window.carregarUsuariosAdmin = carregarUsuariosAdmin;
-window.editarUsuarioAdmin = editarUsuarioAdmin;
-window.adicionarMinutosAdmin = adicionarMinutosAdmin;
-window.carregarPedidosAdmin = carregarPedidosAdmin;
-window.carregarPacotesAdmin = carregarPacotesAdmin;
-window.criarPacoteAdmin = criarPacoteAdmin;
-window.editarPacoteAdmin = editarPacoteAdmin;
-window.excluirPacoteAdmin = excluirPacoteAdmin;
-window.carregarConfiguracaoPagamento = carregarConfiguracaoPagamento;
-window.salvarConfiguracaoPagamento = salvarConfiguracaoPagamento;
-window.salvarPacoteDoFormulario = salvarPacoteDoFormulario;
-window.salvarInfinitePay = salvarInfinitePay;
-window.formatarMinutos = formatarMinutos;
-window.formatarMoeda = formatarMoeda;
+window.carregarUsuario =
+  carregarUsuario;
+window.carregarPacotes =
+  carregarPacotes;
+window.comprarPacote =
+  comprarPacote;
+window.carregarPedidos =
+  carregarPedidos;
+window.carregarAdminDashboard =
+  carregarAdminDashboard;
+window.carregarUsuariosAdmin =
+  carregarUsuariosAdmin;
+window.editarUsuarioAdmin =
+  editarUsuarioAdmin;
+window.adicionarMinutosAdmin =
+  adicionarMinutosAdmin;
+window.carregarPedidosAdmin =
+  carregarPedidosAdmin;
+window.carregarPacotesAdmin =
+  carregarPacotesAdmin;
+window.criarPacoteAdmin =
+  criarPacoteAdmin;
+window.editarPacoteAdmin =
+  editarPacoteAdmin;
+window.excluirPacoteAdmin =
+  excluirPacoteAdmin;
+window.carregarConfiguracaoPagamento =
+  carregarConfiguracaoPagamento;
+window.salvarConfiguracaoPagamento =
+  salvarConfiguracaoPagamento;
+window.salvarPacoteDoFormulario =
+  salvarPacoteDoFormulario;
+window.salvarInfinitePay =
+  salvarInfinitePay;
+window.formatarMinutos =
+  formatarMinutos;
+window.formatarMoeda =
+  formatarMoeda;
