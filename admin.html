@@ -53,8 +53,6 @@
       min-height: 100vh;
     }
 
-    /* SIDEBAR */
-
     .sidebar {
       width: 260px;
       min-width: 260px;
@@ -174,8 +172,6 @@
       font-weight: 700;
     }
 
-    /* MAIN */
-
     .main {
       margin-left: 260px;
       width: calc(100% - 260px);
@@ -222,8 +218,6 @@
       box-shadow: 0 0 12px var(--green);
     }
 
-    /* PAGES */
-
     .page {
       display: none;
     }
@@ -231,8 +225,6 @@
     .page.active {
       display: block;
     }
-
-    /* STATS */
 
     .stats {
       display: grid;
@@ -296,8 +288,6 @@
       font-size: 25px;
     }
 
-    /* CARDS */
-
     .card {
       background: rgba(14,17,31,.88);
       border: 1px solid var(--border);
@@ -324,8 +314,6 @@
       font-size: 12px;
       margin-top: 4px;
     }
-
-    /* BUTTONS */
 
     .btn {
       border: 0;
@@ -362,8 +350,7 @@
       padding: 8px 10px;
       font-size: 11px;
     }
-
-    /* FORM */
+        /* FORM */
 
     .form-grid {
       display: grid;
@@ -697,8 +684,7 @@
     }
 
     /* MOBILE */
-
-    .mobile-top {
+        .mobile-top {
       display: none;
     }
 
@@ -731,7 +717,7 @@
         justify-content: space-between;
         top: 0;
         left: 0;
-                right: 0;
+        right: 0;
         height: 60px;
         padding: 0 15px;
         background: rgba(7,8,18,.95);
@@ -815,8 +801,6 @@
 </head>
 
 <body>
- 
-            <div class="field">
 
   <div id="message"></div>
 
@@ -918,7 +902,6 @@
         </div>
       </header>
 
-
       <!-- ================= DASHBOARD ================= -->
 
       <section class="page active" id="dashboard">
@@ -951,7 +934,6 @@
 
         </div>
 
-
         <div class="card">
 
           <div class="card-head">
@@ -978,8 +960,8 @@
               🔄 Atualizar dados
             </button>
           </div>
-                  </div>
 
+        </div>
 
         <div class="card">
 
@@ -997,7 +979,6 @@
         </div>
 
       </section>
-
 
       <!-- ================= USUÁRIOS ================= -->
 
@@ -1047,8 +1028,7 @@
               </tbody>
 
             </table>
-
-          </div>
+                      </div>
 
         </div>
 
@@ -1247,3 +1227,1271 @@
       <section class="page" id="pedidos">
 
         <div class="card">
+                    <div class="card-head">
+
+            <div>
+              <h2>🧾 Pedidos</h2>
+              <p>Pedidos registrados no GameCloud.</p>
+            </div>
+
+            <button class="btn btn-small" onclick="carregarPedidosTela()">
+              🔄 Atualizar
+            </button>
+
+          </div>
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Usuário</th>
+                  <th>Pacote</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+
+              <tbody id="ordersTable">
+
+                <tr>
+                  <td colspan="6" class="empty">
+                    Carregando pedidos...
+                  </td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= INFINITEPAY ================= -->
+
+      <section class="page" id="pagamento">
+
+        <div class="card">
+
+          <div class="card-head">
+
+            <div>
+              <h2>💳 InfinitePay</h2>
+              <p>Configure os dados de pagamento da plataforma.</p>
+            </div>
+
+          </div>
+
+          <div class="form-grid">
+
+            <div class="field full">
+
+              <label>Handle InfinitePay</label>
+
+              <input
+                id="infinitepayHandle"
+                placeholder="Ex.: seu-handle"
+              >
+
+              <small id="paymentHandlePreview">
+                Informe o handle usado para receber os pagamentos.
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <div class="toggle-row">
+
+            <div>
+              <strong>InfinitePay ativo</strong>
+
+              <small>
+                Permite utilizar InfinitePay como método de pagamento.
+              </small>
+            </div>
+
+            <label class="switch">
+
+              <input
+                type="checkbox"
+                id="infinitepayActive"
+              >
+
+              <span class="slider"></span>
+
+            </label>
+
+          </div>
+
+
+          <div class="toggle-row">
+
+            <div>
+              <strong>PIX ativo</strong>
+
+              <small>
+                Permite pagamentos via PIX.
+              </small>
+            </div>
+
+            <label class="switch">
+
+              <input
+                type="checkbox"
+                id="pixActive"
+              >
+
+              <span class="slider"></span>
+
+            </label>
+
+          </div>
+
+
+          <div class="toggle-row">
+
+            <div>
+              <strong>Cartão ativo</strong>
+
+              <small>
+                Permite pagamentos com cartão.
+              </small>
+            </div>
+
+            <label class="switch">
+
+              <input
+                type="checkbox"
+                id="cardActive"
+              >
+
+              <span class="slider"></span>
+
+            </label>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button
+              class="btn btn-green"
+              onclick="salvarPagamentoTela()"
+            >
+              💾 Salvar configuração
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= CONFIGURAÇÕES ================= -->
+
+      <section class="page" id="config">
+
+        <div class="card">
+
+          <div class="card-head">
+
+            <div>
+              <h2>⚙️ Configurações</h2>
+              <p>Configurações gerais do painel administrativo.</p>
+            </div>
+
+          </div>
+
+          <div class="empty">
+
+            As configurações gerais da plataforma ficam disponíveis
+            nesta área.
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+    </main>
+
+  </div>
+
+
+  <div id="adminNotice"></div>
+
+
+  <script src="app.js"></script>
+    <script>
+
+    function mostrarAviso(texto, erro = false) {
+
+      const box =
+        document.getElementById('adminNotice');
+
+      if (!box) return;
+
+      box.textContent = texto || '';
+
+      box.className =
+        erro
+          ? 'admin-notice error'
+          : 'admin-notice';
+
+      if (texto) {
+
+        setTimeout(() => {
+
+          box.textContent = '';
+          box.className = 'admin-notice';
+
+        }, 3500);
+
+      }
+
+    }
+
+
+    function esc(valor) {
+
+      return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+    }
+
+
+    function moeda(valor) {
+
+      const numero =
+        Number(valor || 0);
+
+      return numero.toLocaleString(
+        'pt-BR',
+        {
+          style: 'currency',
+          currency: 'BRL'
+        }
+      );
+
+    }
+
+
+    function dataBR(valor) {
+
+      if (!valor) return '-';
+
+      const data =
+        new Date(valor);
+
+      if (Number.isNaN(data.getTime())) {
+        return String(valor);
+      }
+
+      return data.toLocaleString('pt-BR');
+
+    }
+
+
+    async function showAdminPage(nome) {
+
+      document
+        .querySelectorAll('.page')
+        .forEach(page => {
+
+          page.classList.toggle(
+            'active',
+            page.id === nome
+          );
+
+        });
+
+
+      document
+        .querySelectorAll('[data-page]')
+        .forEach(item => {
+
+          item.classList.toggle(
+            'active',
+            item.dataset.page === nome
+          );
+
+        });
+
+
+      if (nome === 'dashboard') {
+
+        if (typeof carregarAdminDashboard === 'function') {
+          await carregarAdminDashboard();
+        }
+
+      }
+
+
+      if (nome === 'usuarios') {
+
+        if (typeof carregarUsuariosAdmin === 'function') {
+          await carregarUsuariosAdmin();
+        }
+
+      }
+
+
+      if (nome === 'pacotes') {
+
+        if (typeof carregarPacotesAdmin === 'function') {
+          await carregarPacotesAdmin();
+        }
+
+        renderPacotes();
+
+      }
+
+
+      if (nome === 'pedidos') {
+
+        await carregarPedidosTela();
+
+      }
+
+
+      if (nome === 'pagamento') {
+
+        await carregarPagamentoTela();
+
+      }
+
+    }
+
+
+    function toggleMobileMenu() {
+
+      const menu =
+        document.getElementById('mobileMenu');
+
+      if (!menu) return;
+
+      menu.classList.toggle('open');
+
+    }
+
+
+    function renderUsuarios() {
+
+      if (
+        typeof window.IGC_ADMIN_USERS === 'undefined'
+      ) {
+        return;
+      }
+
+      const usuarios =
+        Array.isArray(window.IGC_ADMIN_USERS)
+          ? window.IGC_ADMIN_USERS
+          : [];
+
+      const tbody =
+        document.getElementById('usersTable');
+
+      if (!tbody) return;
+
+      if (!usuarios.length) {
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="empty">
+              Nenhum usuário encontrado.
+            </td>
+          </tr>
+        `;
+
+        return;
+
+      }
+
+
+      tbody.innerHTML =
+        usuarios.map(usuario => `
+
+          <tr>
+
+            <td>
+              ${esc(
+                usuario.id ||
+                usuario.user_id ||
+                '-'
+              )}
+            </td>
+
+            <td>
+              ${esc(
+                usuario.username ||
+                usuario.nome ||
+                '-'
+              )}
+            </td>
+
+            <td>
+              ${esc(
+                usuario.email ||
+                '-'
+              )}
+            </td>
+
+            <td>
+              ${esc(
+                usuario.plano ||
+                usuario.plan ||
+                '-'
+              )}
+            </td>
+
+            <td>
+              ${Number(
+                usuario.minutos || 0
+              )}
+            </td>
+
+            <td>
+              ${
+                usuario.bloqueado
+                  ? '<span class="status red">Bloqueado</span>'
+                  : '<span class="status green">Ativo</span>'
+              }
+            </td>
+
+            <td>
+
+              <button
+                class="btn btn-small"
+                onclick="editarUsuarioTela('${esc(
+                  usuario.id ||
+                  usuario.user_id ||
+                  ''
+                )}')"
+              >
+                ✏️ Editar
+              </button>
+
+            </td>
+
+          </tr>
+
+        `).join('');
+
+    }
+
+
+    function filtrarUsuarios() {
+
+      const input =
+        document.getElementById('userSearch');
+
+      const termo =
+        input
+          ? input.value
+              .trim()
+              .toLowerCase()
+          : '';
+
+      document
+        .querySelectorAll('#usersTable tr')
+        .forEach(row => {
+
+          const texto =
+            row.textContent
+              .toLowerCase();
+
+          row.style.display =
+            !termo ||
+            texto.includes(termo)
+              ? ''
+              : 'none';
+
+        });
+
+    }
+
+
+    function editarUsuarioTela(id) {
+
+      const usuarios =
+        Array.isArray(window.IGC_ADMIN_USERS)
+          ? window.IGC_ADMIN_USERS
+          : [];
+
+      const usuario =
+        usuarios.find(item =>
+          String(
+            item.id ||
+            item.user_id ||
+            ''
+          ) === String(id)
+        );
+
+      if (!usuario) {
+
+        mostrarAviso(
+          'Usuário não encontrado.',
+          true
+        );
+
+        return;
+
+      }
+
+
+      const card =
+        document.getElementById(
+          'editUserCard'
+        );
+
+      if (card) {
+        card.style.display = 'block';
+      }
+
+
+      const campoId =
+        document.getElementById(
+          'editUserId'
+        );
+
+      const campoUsername =
+        document.getElementById(
+          'editUsername'
+        );
+
+      const campoEmail =
+        document.getElementById(
+          'editEmail'
+        );
+
+      const campoPlan =
+        document.getElementById(
+          'editPlan'
+        );
+
+      const campoMinutes =
+        document.getElementById(
+          'editMinutes'
+        );
+
+      const campoBlocked =
+        document.getElementById(
+          'editBlocked'
+        );
+
+
+      if (campoId) {
+        campoId.value =
+          usuario.id ||
+          usuario.user_id ||
+          '';
+      }
+
+      if (campoUsername) {
+        campoUsername.value =
+          usuario.username ||
+          usuario.nome ||
+          '';
+      }
+
+      if (campoEmail) {
+        campoEmail.value =
+          usuario.email ||
+          '';
+      }
+
+      if (campoPlan) {
+        campoPlan.value =
+          usuario.plano ||
+          usuario.plan ||
+          '';
+      }
+
+      if (campoMinutes) {
+        campoMinutes.value =
+          Number(
+            usuario.minutos || 0
+          );
+      }
+
+      if (campoBlocked) {
+        campoBlocked.checked =
+          Boolean(
+            usuario.bloqueado
+          );
+      }
+
+
+      card?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+
+    }
+
+
+    function fecharEditorUsuario() {
+
+      const card =
+        document.getElementById(
+          'editUserCard'
+        );
+
+      if (card) {
+        card.style.display = 'none';
+      }
+
+    }
+
+
+    async function salvarEdicaoUsuario() {
+
+      const id =
+        document.getElementById(
+          'editUserId'
+        )?.value.trim();
+
+      const username =
+        document.getElementById(
+          'editUsername'
+        )?.value.trim();
+
+      const email =
+        document.getElementById(
+          'editEmail'
+        )?.value.trim();
+
+      const plano =
+        document.getElementById(
+          'editPlan'
+        )?.value.trim();
+
+      const minutos =
+        Number(
+          document.getElementById(
+            'editMinutes'
+          )?.value || 0
+        );
+
+      const bloqueado =
+        Boolean(
+          document.getElementById(
+            'editBlocked'
+          )?.checked
+        );
+
+
+      if (!id) {
+
+        mostrarAviso(
+          'ID do usuário não encontrado.',
+          true
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        await editarUsuarioAdmin(
+          id,
+          {
+            username,
+            email,
+            plano,
+            minutos,
+            bloqueado
+          }
+        );
+
+
+        mostrarAviso(
+          'Usuário atualizado com sucesso.'
+        );
+
+
+        fecharEditorUsuario();
+
+
+        if (
+          typeof carregarUsuariosAdmin ===
+          'function'
+        ) {
+
+          await carregarUsuariosAdmin();
+
+        }
+
+        renderUsuarios();
+
+
+      } catch (erro) {
+
+        mostrarAviso(
+          erro.message ||
+          'Não foi possível atualizar o usuário.',
+          true
+        );
+
+      }
+
+    }
+
+
+    async function adicionarMinutosTelaAdmin() {
+
+      await adicionarMinutosTela();
+
+    }
+
+
+    function renderPacotes() {
+
+      const container =
+        document.getElementById(
+          'adminPackages'
+        );
+
+      if (!container) return;
+
+
+      const pacotes =
+        Array.isArray(
+          window.IGC_ADMIN_PACKAGES
+        )
+          ? window.IGC_ADMIN_PACKAGES
+          : [];
+
+
+      if (!pacotes.length) {
+
+        container.innerHTML = `
+          <div class="empty">
+            Nenhum pacote cadastrado.
+          </div>
+        `;
+
+        return;
+
+      }
+
+
+      container.innerHTML =
+        pacotes.map(pacote => `
+
+          <div class="package-card">
+
+            <div class="package-card-head">
+
+              <div>
+
+                <strong>
+                  ${esc(
+                    pacote.name ||
+                    pacote.nome ||
+                    'Pacote'
+                  )}
+                </strong>
+
+                <small>
+                  ${Number(
+                    pacote.minutes ||
+                    pacote.minutos ||
+                    0
+                  )} minutos
+                </small>
+
+              </div>
+
+              <span class="status ${
+                pacote.active === false
+                  ? 'red'
+                  : 'green'
+              }">
+
+                ${
+                  pacote.active === false
+                    ? 'Inativo'
+                    : 'Ativo'
+                }
+
+              </span>
+
+            </div>
+
+
+            <div class="package-price">
+
+              ${moeda(
+                pacote.priceCents != null
+                  ? Number(
+                      pacote.priceCents
+                    ) / 100
+                  : pacote.price
+              )}
+
+            </div>
+
+
+            <p>
+              ${esc(
+                pacote.description ||
+                pacote.descricao ||
+                ''
+              )}
+            </p>
+
+
+            <div class="actions">
+
+              <button
+                class="btn btn-small"
+                onclick="editarPacoteTela('${esc(
+                  pacote.id || ''
+                )}')"
+              >
+                ✏️ Editar
+              </button>
+
+            </div>
+
+          </div>
+
+        `).join('');
+
+    }
+         function novoPacote() {
+
+      const editor =
+        document.getElementById(
+          'packageEditor'
+        );
+
+      if (editor) {
+        editor.style.display = 'block';
+      }
+
+
+      document.getElementById(
+        'packageEditorTitle'
+      ).textContent =
+        '📦 Novo pacote';
+
+
+      document.getElementById(
+        'packageId'
+      ).value = '';
+
+
+      document.getElementById(
+        'packageName'
+      ).value = '';
+
+
+      document.getElementById(
+        'packageMinutes'
+      ).value = '';
+
+
+      document.getElementById(
+        'packagePrice'
+      ).value = '';
+
+
+      document.getElementById(
+        'packageOrder'
+      ).value = '0';
+
+
+      document.getElementById(
+        'packageDescription'
+      ).value = '';
+
+
+      document.getElementById(
+        'packageActive'
+      ).checked = true;
+
+
+      document.getElementById(
+        'deletePackageButton'
+      ).style.display = 'none';
+
+
+      editor?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+
+    }
+
+
+    function editarPacoteTela(id) {
+
+      const pacotes =
+        Array.isArray(
+          window.IGC_ADMIN_PACKAGES
+        )
+          ? window.IGC_ADMIN_PACKAGES
+          : [];
+
+      const pacote =
+        pacotes.find(item =>
+          String(item.id) ===
+          String(id)
+        );
+
+
+      if (!pacote) {
+
+        mostrarAviso(
+          'Pacote não encontrado.',
+          true
+        );
+
+        return;
+
+      }
+
+
+      document.getElementById(
+        'packageEditor'
+      ).style.display = 'block';
+
+
+      document.getElementById(
+        'packageEditorTitle'
+      ).textContent =
+        '📦 Editar pacote';
+
+
+      document.getElementById(
+        'packageId'
+      ).value =
+        pacote.id || '';
+
+
+      document.getElementById(
+        'packageName'
+      ).value =
+        pacote.name ||
+        pacote.nome ||
+        '';
+
+
+      document.getElementById(
+        'packageMinutes'
+      ).value =
+        pacote.minutes ||
+        pacote.minutos ||
+        0;
+
+
+      document.getElementById(
+        'packagePrice'
+      ).value =
+        pacote.priceCents != null
+          ? Number(
+              pacote.priceCents
+            ) / 100
+          : Number(
+              pacote.price || 0
+            );
+
+
+      document.getElementById(
+        'packageOrder'
+      ).value =
+        pacote.order ||
+        pacote.ordem ||
+        0;
+
+
+      document.getElementById(
+        'packageDescription'
+      ).value =
+        pacote.description ||
+        pacote.descricao ||
+        '';
+
+
+      document.getElementById(
+        'packageActive'
+      ).checked =
+        pacote.active !== false;
+
+
+      document.getElementById(
+        'deletePackageButton'
+      ).style.display =
+        'inline-flex';
+
+
+      document.getElementById(
+        'packageEditor'
+      ).scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+
+    }
+
+
+    async function salvarPacoteTela() {
+
+      const id =
+        document.getElementById(
+          'packageId'
+        ).value.trim();
+
+
+      try {
+
+        await salvarPacoteDoFormulario(
+          id || null
+        );
+
+
+        mostrarAviso(
+          'Pacote salvo com sucesso.'
+        );
+
+
+        if (
+          typeof carregarPacotesAdmin ===
+          'function'
+        ) {
+
+          await carregarPacotesAdmin();
+
+        }
+
+        renderPacotes();
+
+
+        fecharEditorPacote();
+
+
+      } catch (erro) {
+
+        mostrarAviso(
+          erro.message ||
+          'Não foi possível salvar o pacote.',
+          true
+        );
+
+      }
+
+    }
+
+
+    async function excluirPacoteAtual() {
+
+      const id =
+        document.getElementById(
+          'packageId'
+        ).value.trim();
+
+
+      if (!id) return;
+
+
+      if (
+        !confirm(
+          'Deseja realmente excluir este pacote?'
+        )
+      ) {
+        return;
+      }
+
+
+      try {
+
+        await excluirPacoteAdmin(id);
+
+
+        mostrarAviso(
+          'Pacote excluído com sucesso.'
+        );
+
+
+        if (
+          typeof carregarPacotesAdmin ===
+          'function'
+        ) {
+
+          await carregarPacotesAdmin();
+
+        }
+
+        renderPacotes();
+
+        fecharEditorPacote();
+
+
+      } catch (erro) {
+
+        mostrarAviso(
+          erro.message ||
+          'Não foi possível excluir o pacote.',
+          true
+        );
+
+      }
+
+    }
+
+
+    function fecharEditorPacote() {
+
+      const editor =
+        document.getElementById(
+          'packageEditor'
+        );
+
+      if (editor) {
+        editor.style.display = 'none';
+      }
+
+    }
+
+
+    async function carregarPedidosTela() {
+
+      const tbody =
+        document.getElementById(
+          'ordersTable'
+        );
+
+      if (!tbody) return;
+
+
+      try {
+
+        if (
+          typeof carregarPedidosAdmin ===
+          'function'
+        ) {
+
+          await carregarPedidosAdmin();
+
+        }
+
+
+        const pedidos =
+          Array.isArray(
+            window.IGC_ADMIN_ORDERS
+          )
+            ? window.IGC_ADMIN_ORDERS
+            : [];
+
+
+        if (!pedidos.length) {
+
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="empty">
+                Nenhum pedido encontrado.
+              </td>
+            </tr>
+          `;
+
+          return;
+
+        }
+
+
+        tbody.innerHTML =
+          pedidos.map(pedido => `
+
+            <tr>
+
+              <td>
+                ${esc(
+                  pedido.id ||
+                  pedido.order_id ||
+                  '-'
+                )}
+              </td>
+
+              <td>
+                ${esc(
+                  pedido.email ||
+                  pedido.user_email ||
+                  pedido.username ||
+                  '-'
+                )}
+              </td>
+
+              <td>
+                ${esc(
+                  pedido.package_name ||
+                  pedido.package ||
+                  pedido.pacote ||
+                  '-'
+                )}
+              </td>
+
+              <td>
+                ${moeda(
+                  pedido.price != null
+                    ? pedido.price
+                    : (
+                      Number(
+                        pedido.priceCents ||
+                        0
+                      ) / 100
+                    )
+                )}
+              </td>
+
+              <td>
+                ${esc(
+                  pedido.status ||
+                  '-'
+                )}
+              </td>
+
+              <td>
+                ${dataBR(
+                  pedido.created_at ||
+                  pedido.createdAt ||
+                  pedido.data
+                )}
+              </td>
+
+            </tr>
+
+          `).join('');
+
+
+      } catch (erro) {
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty">
+              Erro ao carregar pedidos.
+            </td>
+          </tr>
+        `;
+
+      }
+
+    } 
