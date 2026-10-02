@@ -843,6 +843,121 @@ async function carregarUsuariosAdmin() {
   } catch (error) {
     message(
       error.message ||
+      async function adicionarMinutosTela() {
+  const idInput =
+    el('giftUserId') ||
+    el('minutesUserId');
+
+  const idMinutesInput =
+    el('giftMinutes') ||
+    el('minutesAmount');
+
+  const emailInput =
+    el('giftUserEmail') ||
+    el('minutesUserEmail');
+
+  const emailMinutesInput =
+    el('giftEmailMinutes') ||
+    el('minutesEmailAmount');
+
+  const id =
+    idInput
+      ? idInput.value.trim()
+      : '';
+
+  const minutosId =
+    idMinutesInput
+      ? Number(idMinutesInput.value)
+      : 0;
+
+  const email =
+    emailInput
+      ? emailInput.value.trim()
+      : '';
+
+  const minutosEmail =
+    emailMinutesInput
+      ? Number(emailMinutesInput.value)
+      : 0;
+
+  try {
+    if (id) {
+      if (
+        !Number.isFinite(minutosId) ||
+        minutosId <= 0
+      ) {
+        message(
+          'Informe uma quantidade válida de minutos para o ID.',
+          true
+        );
+        return;
+      }
+
+      await adicionarMinutosAdmin(
+        id,
+        minutosId
+      );
+
+      message(
+        'Minutos adicionados pelo ID com sucesso.'
+      );
+
+      if (idMinutesInput) {
+        idMinutesInput.value = '';
+      }
+
+      if (idInput) {
+        idInput.value = '';
+      }
+
+      return;
+    }
+
+    if (email) {
+      if (
+        !Number.isFinite(minutosEmail) ||
+        minutosEmail <= 0
+      ) {
+        message(
+          'Informe uma quantidade válida de minutos para o e-mail.',
+          true
+        );
+        return;
+      }
+
+      await adicionarMinutosAdminPorEmail(
+        email,
+        minutosEmail
+      );
+
+      message(
+        'Minutos adicionados pelo e-mail com sucesso.'
+      );
+
+      if (emailMinutesInput) {
+        emailMinutesInput.value = '';
+      }
+
+      if (emailInput) {
+        emailInput.value = '';
+      }
+
+      return;
+    }
+
+    message(
+      'Informe o ID ou o e-mail do usuário.',
+      true
+    );
+
+  } catch (error) {
+    message(
+      error.message ||
+      'Não foi possível adicionar os minutos.',
+      true
+    );
+  }
+}
       'Erro ao carregar usuários.',
       true
     );
