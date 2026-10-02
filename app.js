@@ -2,47 +2,11 @@
 
 const API_BASE = '/api';
 
-let token =
-  localStorage.getItem('igc_token') ||
-  sessionStorage.getItem('igc_token') ||
-  '';
+function api(path, options = {}) {
+  const token =
+    localStorage.getItem('igc_token') ||
+    sessionStorage.getItem('igc_token');
 
-let role =
-  localStorage.getItem('igc_role') ||
-  sessionStorage.getItem('igc_role') ||
-  '';
-
-function el(id) {
-  return document.getElementById(id);
-}
-
-function show(page) {
-  document.querySelectorAll('.page').forEach(section => {
-    section.classList.toggle('active', section.id === page);
-  });
-}
-
-function message(text, isError = false) {
-  const node =
-    el('message') ||
-    el('messageRegister') ||
-    el('messageLogin');
-
-  if (!node) {
-    if (text) alert(text);
-    return;
-  }
-
-  node.textContent = text || '';
-  node.className = isError ? 'error' : 'success';
-
-  setTimeout(() => {
-    node.textContent = '';
-    node.className = '';
-  }, 4000);
-}
-
-async function api(endpoint, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {})
@@ -52,256 +16,263 @@ async function api(endpoint, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(
-    `${API_BASE}/${String(endpoint).replace(/^\/+/, '')}`,
+  return fetch(
+    `${API_BASE}${path}`,
     {
       ...options,
       headers
     }
-  );
+  ).then(async response => {
+    const text = await response.text();
 
-  let data = {};
+    let data = {};
 
-  try {
-    data = await response.json();
-  } catch (_) {
-    data = {};
-  }
+    try {
+      data = text
+        ? JSON.parse(text)
+        : {};
+    } catch {
+      data = {
+        message: text
+      };
+    }
 
-  if (!response.ok) {
-    throw new Error(
-      data.error ||
-      data.message ||
-      'Erro na comunicação com o servidor.'
-    );
-  }
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+        data.error ||
+        'Erro na comunicação com o servidor.'
+      );
+    }
 
-  return data;
-}
-
-function salvarSessao(novoToken, novoRole = 'user', lembrar = true) {
-  token = novoToken || '';
-  role = novoRole || 'user';
-
-  const storage = lembrar ? localStorage : sessionStorage;
-  const otherStorage = lembrar ? sessionStorage : localStorage;
-
-  otherStorage.removeItem('igc_token');
-  otherStorage.removeItem('igc_role');
-
-  storage.setItem('igc_token', token);
-  storage.setItem('igc_role', role);
-}
-
-function limparSessao() {
-  token = '';
-  role = '';
-
-  localStorage.removeItem('igc_token');
-  localStorage.removeItem('igc_role');
-
-  sessionStorage.removeItem('igc_token');
-  sessionStorage.removeItem('igc_role');
-}
-
-function logout() {
-  const oldToken = token;
-
-  limparSessao();
-
-  if (oldToken) {
-    fetch(`${API_BASE}/logout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${oldToken}`
-      }
-    }).catch(() => {});
-  }
-
-  window.location.href = 'index.html';
-}
-
-function verificarAutenticacao() {
-  if (!token) {
-    window.location.href = 'index.html';
-    return false;
-  }
-
-  return true;
-}
-
-function formatarMinutos(minutos) {
-  const total = Math.max(0, Number(minutos) || 0);
-  const horas = Math.floor(total / 60);
-  const minutosRestantes = total % 60;
-
-  if (horas > 0) {
-    return `${horas}h ${minutosRestantes}m`;
-  }
-
-  return `${minutosRestantes}m`;
-}
-
-function formatarMoeda(valor) {
-  return Number(valor || 0).toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
+    return data;
   });
 }
 
-function escaparHTML(valor) {
-  return String(valor ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+function el(id) {
+  return document.getElementById(id);
 }
 
-/* =========================================================
-   LOGIN
-========================================================= */
+function show(id, visible = true) {
+  const node = el(id);
 
-async function fazerLogin(event) {
-  if (event) event.preventDefault();
+  if (!node) {
+    return;
+  }
 
-  const userInput =
-    el('username') ||
-    el('user') ||
-    el('login') ||
-    el('email');
+  node.style.display =
+    visible ? '' : 'none';
+}
 
-  const passwordInput =
-    el('password') ||
-    el('senha') ||
-    el('pass');
+function message(text, isError = false) {
+  const node =
+    el('message') ||
+    el('messageRegister') ||
+    el('messageLogin');
 
-  const lembrarInput =
-    el('remember') ||
-    el('lembrar');
+  if (!node) {
+    return;
+  }
 
-  const user = userInput ? userInput.value.trim() : '';
-  const pass = passwordInput ? passwordInput.value : '';
-  const lembrar = lembrarInput ? lembrarInput.checked : true;
+  node.textContent = text || '';
+
+  node.style.color =
+    isError
+      ? '#ff5c7a'
+      : '';
+}
+
+function salvarToken(token, lembrar = true) {
+  localStorage.removeItem('igc_token');
+  sessionStorage.removeItem('igc_token');
+
+  if (!token) {
+    return;
+  }
+
+  const storage =
+    lembrar
+      ? localStorage
+      : sessionStorage;
+
+  storage.setItem(
+    'igc_token',
+    token
+  );
+}
+
+function obterToken() {
+  return (
+    localStorage.getItem('igc_token') ||
+    sessionStorage.getItem('igc_token') ||
+    ''
+  );
+}
+
+function limparToken() {
+  localStorage.removeItem(
+    'igc_token'
+  );
+
+  sessionStorage.removeItem(
+    'igc_token'
+  );
+}
+
+async function verificarAutenticacao() {
+  const token = obterToken();
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const data =
+      await api('/me');
+
+    return (
+      data.user ||
+      data.usuario ||
+      data
+    );
+
+  } catch {
+    limparToken();
+    return null;
+  }
+}
+
+async function verificarAdmin() {
+  const token = obterToken();
+
+  if (!token) {
+    return false;
+  }
+
+  try {
+    const data =
+      await api('/me');
+
+    const role =
+      data.role ||
+      data.user?.role ||
+      data.usuario?.role;
+
+    return role === 'admin';
+
+  } catch {
+    return false;
+  }
+}
+
+async function fazerLogin(
+  event
+) {
+  if (event) {
+    event.preventDefault();
+  }
+
+  const user =
+    (
+      el('loginUser') ||
+      el('username') ||
+      el('email')
+    )?.value.trim() || '';
+
+  const pass =
+    (
+      el('loginPassword') ||
+      el('password')
+    )?.value || '';
+
+  const lembrar =
+    el('rememberMe')
+      ? el('rememberMe').checked
+      : true;
 
   if (!user || !pass) {
-    message('Informe usuário/e-mail e senha.', true);
+    message(
+      'Informe usuário/e-mail e senha.',
+      true
+    );
     return;
   }
 
   try {
-    const data = await api('/login', {
-      method: 'POST',
-      body: JSON.stringify({
-        user,
-        pass
-      })
-    });
-
-    if (!data.token) {
-      throw new Error(
-        'O servidor não retornou um token de sessão.'
+    const data =
+      await api(
+        '/login',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            user,
+            email: user,
+            username: user,
+            pass,
+            password: pass
+          })
+        }
       );
-    }
 
-    salvarSessao(
+    salvarToken(
       data.token,
-      data.role || 'user',
       lembrar
     );
 
-    message('Login realizado com sucesso.');
+    const role =
+      data.role ||
+      data.user?.role ||
+      data.usuario?.role;
 
-    setTimeout(() => {
-      if ((data.role || role) === 'admin') {
-        window.location.href = 'admin.html';
-      } else {
-        window.location.href = 'usuario.html';
-      }
-    }, 300);
+    if (role === 'admin') {
+      window.location.href =
+        'admin.html';
+      return;
+    }
+
+    window.location.href =
+      'usuario.html';
 
   } catch (error) {
     message(
       error.message ||
-      'E-mail/usuário ou senha incorretos.',
+      'E-mail ou senha incorretos.',
       true
     );
   }
 }
-
-/* =========================================================
-   CADASTRO
-========================================================= */
-
-async function registrar(event) {
-  if (event) event.preventDefault();
-
-  const usernameInput =
-    el('registerUsername') ||
-    el('regUsername') ||
-    el('username');
-
-  const emailInput =
-    el('registerEmail') ||
-    el('regEmail') ||
-    el('email');
-
-  const passwordInput =
-    el('registerPassword') ||
-    el('regPassword') ||
-    el('password');
-
-  const confirmInput =
-    el('confirmPassword') ||
-    el('registerConfirmPassword') ||
-    el('regConfirmPassword');
+async function registrar(
+  event
+) {
+  if (event) {
+    event.preventDefault();
+  }
 
   const username =
-    usernameInput
-      ? usernameInput.value.trim()
-      : '';
+    el('registerUsername')?.value.trim() ||
+    '';
 
   const email =
-    emailInput
-      ? emailInput.value.trim()
-      : '';
+    el('registerEmail')?.value.trim() ||
+    '';
 
   const password =
-    passwordInput
-      ? passwordInput.value
-      : '';
+    el('registerPassword')?.value ||
+    '';
 
-  const confirm =
-    confirmInput
-      ? confirmInput.value
-      : password;
+  const confirmPassword =
+    el('confirmPassword')?.value ||
+    '';
 
   if (!username || !email || !password) {
     message(
-      'Preencha usuário, e-mail e senha.',
+      'Preencha todos os campos.',
       true
     );
     return;
   }
 
-  if (username.length < 3) {
-    message(
-      'O usuário deve ter pelo menos 3 caracteres.',
-      true
-    );
-    return;
-  }
-
-  if (password.length < 6) {
-    message(
-      'A senha deve ter pelo menos 6 caracteres.',
-      true
-    );
-    return;
-  }
-
-  if (password !== confirm) {
+  if (password !== confirmPassword) {
     message(
       'As senhas não conferem.',
       true
@@ -310,25 +281,39 @@ async function registrar(event) {
   }
 
   try {
-    message('Criando sua conta...');
-
-    const data = await api('/register', {
-      method: 'POST',
-      body: JSON.stringify({
-        username,
-        email,
-        password
-      })
-    });
+    await api(
+      '/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          username,
+          email,
+          password
+        })
+      }
+    );
 
     message(
-      data.message ||
       'Conta criada com sucesso!'
     );
 
-    setTimeout(() => {
-      show('login');
-    }, 800);
+    const loginEmail =
+      el('loginUser') ||
+      el('email');
+
+    if (loginEmail) {
+      loginEmail.value =
+        email;
+    }
+
+    const loginPassword =
+      el('loginPassword') ||
+      el('password');
+
+    if (loginPassword) {
+      loginPassword.value =
+        password;
+    }
 
   } catch (error) {
     message(
@@ -339,283 +324,127 @@ async function registrar(event) {
   }
 }
 
-/* =========================================================
-   USUÁRIO LOGADO
-========================================================= */
+async function logout() {
+  limparToken();
 
-async function obterUsuario() {
-  return api('/me');
+  window.location.href =
+    'index.html';
 }
 
 async function carregarUsuario() {
-  if (!verificarAutenticacao()) return null;
-
   try {
-    const data = await obterUsuario();
+    const data =
+      await api('/me');
 
     const usuario =
       data.user ||
       data.usuario ||
       data;
 
-    preencherDadosUsuario(usuario);
+    window.IGC_USER =
+      usuario;
+
+    const valores = {
+      username:
+        usuario.username ||
+        usuario.nome ||
+        '',
+      email:
+        usuario.email ||
+        '',
+      minutes:
+        usuario.minutes ??
+        usuario.minutos ??
+        0,
+      saldo:
+        usuario.saldo ??
+        0
+    };
+
+    Object.entries(valores)
+      .forEach(
+        ([id, value]) => {
+          const node =
+            el(id);
+
+          if (node) {
+            node.textContent =
+              String(value);
+          }
+        }
+      );
 
     return usuario;
 
   } catch (error) {
-    limparSessao();
-    window.location.href = 'index.html';
+    message(
+      error.message ||
+      'Não foi possível carregar o usuário.',
+      true
+    );
+
     return null;
   }
 }
 
-function preencherDadosUsuario(usuario) {
-  if (!usuario) return;
-
-  const nome =
-    usuario.username ||
-    usuario.nome ||
-    usuario.user ||
-    'Usuário';
-
-  const email =
-    usuario.email ||
-    '';
-
-  const minutos =
-    Number(usuario.minutos || 0);
-
-  const plano =
-    usuario.plano ||
-    'Nenhum';
-
-  const elementosNome = [
-    'userName',
-    'usernameDisplay',
-    'nomeUsuario',
-    'welcomeName'
-  ];
-
-  elementosNome.forEach(id => {
-    const node = el(id);
-
-    if (node) {
-      node.textContent = nome;
-    }
-  });
-
-  const elementosEmail = [
-    'userEmail',
-    'emailDisplay',
-    'emailUsuario'
-  ];
-
-  elementosEmail.forEach(id => {
-    const node = el(id);
-
-    if (node) {
-      node.textContent = email;
-    }
-  });
-
-  const elementosMinutos = [
-    'minutes',
-    'minutos',
-    'userMinutes',
-    'saldoMinutos',
-    'minutesBalance'
-  ];
-
-  elementosMinutos.forEach(id => {
-    const node = el(id);
-
-    if (node) {
-      node.textContent =
-        formatarMinutos(minutos);
-    }
-  });
-
-  const elementosPlano = [
-    'plan',
-    'userPlan',
-    'plano',
-    'currentPlan'
-  ];
-
-  elementosPlano.forEach(id => {
-    const node = el(id);
-
-    if (node) {
-      node.textContent = plano;
-    }
-  });
-}
-
-/* =========================================================
-   PACOTES
-========================================================= */
-
 async function carregarPacotes() {
   try {
-    const data = await api('/packages');
+    const data =
+      await api('/packages');
 
     const pacotes =
       data.packages ||
       data.pacotes ||
       [];
 
-    window.IGC_PACKAGES = pacotes;
+    window.IGC_PACKAGES =
+      pacotes;
 
     document.dispatchEvent(
-      new CustomEvent('igc:packages', {
-        detail: pacotes
-      })
+      new CustomEvent(
+        'igc:packages',
+        {
+          detail: pacotes
+        }
+      )
     );
 
     return pacotes;
 
   } catch (error) {
-    console.error(
-      'Erro ao carregar pacotes:',
-      error
-    );
-
-    return [];
-  }
-}
-
-function renderizarPacotes(
-  container,
-  pacotes
-) {
-  if (!container) return;
-
-  if (!pacotes.length) {
-    container.innerHTML = `
-      <div class="empty-state">
-        Nenhum pacote disponível no momento.
-      </div>
-    `;
-
-    return;
-  }
-
-  container.innerHTML =
-    pacotes.map(pacote => `
-      <article
-        class="package-card"
-        data-package-id="${escaparHTML(pacote.id)}"
-      >
-
-        <div class="package-name">
-          ${escaparHTML(
-            pacote.nome ||
-            pacote.name ||
-            'Pacote'
-          )}
-        </div>
-
-        <div class="package-price">
-          ${formatarMoeda(
-            pacote.preco ??
-            pacote.price ??
-            0
-          )}
-        </div>
-
-        <div class="package-minutes">
-          ${escaparHTML(
-            formatarMinutos(
-              pacote.minutos || 0
-            )
-          )}
-        </div>
-
-        <div class="package-description">
-          ${escaparHTML(
-            pacote.descricao ||
-            pacote.description ||
-            ''
-          )}
-        </div>
-
-        <button
-          type="button"
-          class="btn-buy"
-          onclick="comprarPacote('${escaparHTML(pacote.id)}')"
-        >
-          Comprar
-        </button>
-
-      </article>
-    `).join('');
-}
-
-/* =========================================================
-   COMPRA / CHECKOUT
-========================================================= */
-
-async function comprarPacote(pacoteId) {
-  if (!verificarAutenticacao()) return;
-
-  if (!pacoteId) {
-    message(
-      'Pacote inválido.',
-      true
-    );
-
-    return;
-  }
-
-  try {
-    message(
-      'Preparando pagamento...'
-    );
-
-    const data = await api('/orders', {
-      method: 'POST',
-      body: JSON.stringify({
-        pacote_id: pacoteId
-      })
-    });
-
-    if (data.checkout_url) {
-      window.location.href =
-        data.checkout_url;
-
-      return;
-    }
-
-    if (data.url) {
-      window.location.href =
-        data.url;
-
-      return;
-    }
-
-    message(
-      data.message ||
-      'Pedido criado. Aguarde a confirmação do pagamento.'
-    );
-
-  } catch (error) {
     message(
       error.message ||
-      'Não foi possível iniciar o pagamento.',
+      'Erro ao carregar pacotes.',
       true
     );
+
+    return [];
   }
 }
 
-/* =========================================================
-   PEDIDOS DO USUÁRIO
-========================================================= */
-
-async function carregarPedidos() {
-  if (!verificarAutenticacao()) {
-    return [];
+async function comprarPacote(
+  packageId
+) {
+  if (!packageId) {
+    throw new Error(
+      'Pacote inválido.'
+    );
   }
 
+  return api(
+    '/orders',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        packageId,
+        pacoteId:
+          packageId
+      })
+    }
+  );
+}
+
+async function carregarPedidos() {
   try {
     const data =
       await api('/orders');
@@ -629,134 +458,159 @@ async function carregarPedidos() {
       pedidos;
 
     document.dispatchEvent(
-      new CustomEvent('igc:orders', {
-        detail: pedidos
-      })
+      new CustomEvent(
+        'igc:orders',
+        {
+          detail: pedidos
+        }
+      )
     );
 
     return pedidos;
 
   } catch (error) {
-    console.error(
-      'Erro ao carregar pedidos:',
-      error
+    message(
+      error.message ||
+      'Erro ao carregar pedidos.',
+      true
     );
 
     return [];
   }
 }
 
-/* =========================================================
-   PAINEL DO USUÁRIO
-========================================================= */
-
 async function iniciarPainelUsuario() {
-  if (!verificarAutenticacao()) {
+  const usuario =
+    await verificarAutenticacao();
+
+  if (!usuario) {
+    window.location.href =
+      'index.html';
+
     return;
   }
 
-  const usuario =
-    await carregarUsuario();
+  window.IGC_USER =
+    usuario;
 
-  if (!usuario) return;
-
-  const pacotes =
-    await carregarPacotes();
-
-  const packageContainer =
-    el('packages') ||
-    el('packagesGrid') ||
-    el('plansGrid') ||
-    el('pacotes');
-
-  if (packageContainer) {
-    renderizarPacotes(
-      packageContainer,
-      pacotes
-    );
-  }
-
+  await carregarUsuario();
+  await carregarPacotes();
   await carregarPedidos();
 
-  verificarRetornoPagamento();
+  try {
+    const data =
+      await api(
+        '/stream/status'
+      );
+
+    window.IGC_STREAM =
+      data;
+
+    document.dispatchEvent(
+      new CustomEvent(
+        'igc:stream-status',
+        {
+          detail: data
+        }
+      )
+    );
+
+  } catch {
+    // Sem streaming disponível.
+  }
 }
 
-/* =========================================================
-   RETORNO DO PAGAMENTO
-========================================================= */
+async function iniciarFiveM() {
+  try {
+    const data =
+      await api(
+        '/stream/start',
+        {
+          method: 'POST'
+        }
+      );
 
-function verificarRetornoPagamento() {
+    window.IGC_STREAM =
+      data;
+
+    document.dispatchEvent(
+      new CustomEvent(
+        'igc:stream-started',
+        {
+          detail: data
+        }
+      )
+    );
+
+    return data;
+
+  } catch (error) {
+    message(
+      error.message ||
+      'Não foi possível iniciar o FiveM.',
+      true
+    );
+
+    throw error;
+  }
+}
+
+async function verificarRetornoPagamento() {
   const params =
     new URLSearchParams(
       window.location.search
     );
 
-  const status = (
-    params.get('pagamento') ||
-    params.get('payment') ||
-    params.get('status') ||
-    ''
-  ).toLowerCase();
+  const status =
+    params.get('status');
 
-  if (
-    status === 'sucesso' ||
-    status === 'success' ||
-    status === 'paid'
-  ) {
-    message(
-      'Pagamento recebido. Os minutos serão liberados após a confirmação.'
-    );
+  if (!status) {
+    return null;
   }
+
+  return {
+    status
+  };
 }
+
 /* =========================================================
    ADMIN
 ========================================================= */
 
-async function verificarAdmin() {
-  if (!verificarAutenticacao()) {
-    return false;
-  }
-
-  if (role !== 'admin') {
-    try {
-      const data =
-        await obterUsuario();
-
-      if (data.role !== 'admin') {
-        window.location.href =
-          'usuario.html';
-
-        return false;
-      }
-
-      role = 'admin';
-
-    } catch (_) {
-      window.location.href =
-        'index.html';
-
-      return false;
-    }
-  }
-
-  return true;
-}
-
 async function carregarAdminDashboard() {
   if (!(await verificarAdmin())) {
-    return null;
+    return [];
   }
 
   try {
     const data =
-      await api('/admin/dashboard');
+      await api(
+        '/admin/dashboard'
+      );
 
-    window.IGC_ADMIN_DASHBOARD =
+    const valores =
+      data.dashboard ||
       data;
 
-    preencherDashboardAdmin(data);
+    window.IGC_ADMIN_DASHBOARD =
+      valores;
 
-    return data;
+    Object.entries(valores)
+      .forEach(
+        ([id, value]) => {
+          const node =
+            el(id);
+
+          if (node) {
+            node.textContent =
+              id === 'sales'
+                ? formatarMoeda(value)
+                : String(value);
+          }
+        }
+      );
+
+    return valores;
 
   } catch (error) {
     message(
@@ -765,52 +619,12 @@ async function carregarAdminDashboard() {
       true
     );
 
-    return null;
+    return [];
   }
 }
-
-function preencherDashboardAdmin(data) {
-  if (!data) return;
-
-  const stats =
-    data.stats ||
-    data;
-
-  const valores = {
-    totalUsers:
-      stats.total_users ??
-      stats.totalUsers ??
-      stats.usuarios ??
-      0,
-
-    activeServers:
-      stats.active_servers ??
-      stats.activeServers ??
-      0,
-
-    orders:
-      stats.orders ??
-      stats.pedidos ??
-      0,
-
-    sales:
-      stats.sales ??
-      stats.vendas ??
-      0
-  };
-
-  Object.entries(valores)
-    .forEach(([id, value]) => {
-      const node = el(id);
-
-      if (node) {
-        node.textContent =
-          id === 'sales'
-            ? formatarMoeda(value)
-            : String(value);
-      }
-    });
-}
+/* =========================================================
+   USUÁRIOS DO ADMIN
+========================================================= */
 
 async function carregarUsuariosAdmin() {
   if (!(await verificarAdmin())) {
@@ -843,121 +657,6 @@ async function carregarUsuariosAdmin() {
   } catch (error) {
     message(
       error.message ||
-      async function adicionarMinutosTela() {
-  const idInput =
-    el('giftUserId') ||
-    el('minutesUserId');
-
-  const idMinutesInput =
-    el('giftMinutes') ||
-    el('minutesAmount');
-
-  const emailInput =
-    el('giftUserEmail') ||
-    el('minutesUserEmail');
-
-  const emailMinutesInput =
-    el('giftEmailMinutes') ||
-    el('minutesEmailAmount');
-
-  const id =
-    idInput
-      ? idInput.value.trim()
-      : '';
-
-  const minutosId =
-    idMinutesInput
-      ? Number(idMinutesInput.value)
-      : 0;
-
-  const email =
-    emailInput
-      ? emailInput.value.trim()
-      : '';
-
-  const minutosEmail =
-    emailMinutesInput
-      ? Number(emailMinutesInput.value)
-      : 0;
-
-  try {
-    if (id) {
-      if (
-        !Number.isFinite(minutosId) ||
-        minutosId <= 0
-      ) {
-        message(
-          'Informe uma quantidade válida de minutos para o ID.',
-          true
-        );
-        return;
-      }
-
-      await adicionarMinutosAdmin(
-        id,
-        minutosId
-      );
-
-      message(
-        'Minutos adicionados pelo ID com sucesso.'
-      );
-
-      if (idMinutesInput) {
-        idMinutesInput.value = '';
-      }
-
-      if (idInput) {
-        idInput.value = '';
-      }
-
-      return;
-    }
-
-    if (email) {
-      if (
-        !Number.isFinite(minutosEmail) ||
-        minutosEmail <= 0
-      ) {
-        message(
-          'Informe uma quantidade válida de minutos para o e-mail.',
-          true
-        );
-        return;
-      }
-
-      await adicionarMinutosAdminPorEmail(
-        email,
-        minutosEmail
-      );
-
-      message(
-        'Minutos adicionados pelo e-mail com sucesso.'
-      );
-
-      if (emailMinutesInput) {
-        emailMinutesInput.value = '';
-      }
-
-      if (emailInput) {
-        emailInput.value = '';
-      }
-
-      return;
-    }
-
-    message(
-      'Informe o ID ou o e-mail do usuário.',
-      true
-    );
-
-  } catch (error) {
-    message(
-      error.message ||
-      'Não foi possível adicionar os minutos.',
-      true
-    );
-  }
-}
       'Erro ao carregar usuários.',
       true
     );
@@ -974,11 +673,19 @@ async function editarUsuarioAdmin(
     return null;
   }
 
+  if (!id) {
+    throw new Error(
+      'ID do usuário não informado.'
+    );
+  }
+
   return api(
     `/admin/users/${encodeURIComponent(id)}`,
     {
       method: 'PUT',
-      body: JSON.stringify(dados)
+      body: JSON.stringify(
+        dados || {}
+      )
     }
   );
 }
@@ -991,20 +698,34 @@ async function adicionarMinutosAdmin(
     return null;
   }
 
+  if (!id) {
+    throw new Error(
+      'ID do usuário não informado.'
+    );
+  }
+
+  const minutosNumero =
+    Number(minutos);
+
+  if (
+    !Number.isFinite(minutosNumero) ||
+    minutosNumero <= 0
+  ) {
+    throw new Error(
+      'Informe uma quantidade de minutos válida.'
+    );
+  }
+
   return api(
     `/admin/users/${encodeURIComponent(id)}/minutes`,
     {
       method: 'POST',
       body: JSON.stringify({
-        minutos: Number(minutos)
+        minutos: minutosNumero
       })
     }
   );
 }
-
-/* =========================================================
-   ADICIONAR MINUTOS POR E-MAIL
-========================================================= */
 
 async function adicionarMinutosAdminPorEmail(
   email,
@@ -1082,6 +803,10 @@ async function adicionarMinutosAdminPorEmail(
   );
 }
 
+/* =========================================================
+   PEDIDOS DO ADMIN
+========================================================= */
+
 async function carregarPedidosAdmin() {
   if (!(await verificarAdmin())) {
     return [];
@@ -1099,6 +824,15 @@ async function carregarPedidosAdmin() {
     window.IGC_ADMIN_ORDERS =
       pedidos;
 
+    document.dispatchEvent(
+      new CustomEvent(
+        'igc:admin-orders',
+        {
+          detail: pedidos
+        }
+      )
+    );
+
     return pedidos;
 
   } catch (error) {
@@ -1113,7 +847,7 @@ async function carregarPedidosAdmin() {
 }
 
 /* =========================================================
-   PACOTES ADMIN
+   PACOTES DO ADMIN
 ========================================================= */
 
 async function carregarPacotesAdmin() {
@@ -1132,6 +866,15 @@ async function carregarPacotesAdmin() {
 
     window.IGC_ADMIN_PACKAGES =
       pacotes;
+
+    document.dispatchEvent(
+      new CustomEvent(
+        'igc:admin-packages',
+        {
+          detail: pacotes
+        }
+      )
+    );
 
     return pacotes;
 
@@ -1153,10 +896,15 @@ async function criarPacoteAdmin(
     return null;
   }
 
-  return api('/admin/packages', {
-    method: 'POST',
-    body: JSON.stringify(dados)
-  });
+  return api(
+    '/admin/packages',
+    {
+      method: 'POST',
+      body: JSON.stringify(
+        dados || {}
+      )
+    }
+  );
 }
 
 async function editarPacoteAdmin(
@@ -1167,11 +915,19 @@ async function editarPacoteAdmin(
     return null;
   }
 
+  if (!id) {
+    throw new Error(
+      'ID do pacote não informado.'
+    );
+  }
+
   return api(
     `/admin/packages/${encodeURIComponent(id)}`,
     {
       method: 'PUT',
-      body: JSON.stringify(dados)
+      body: JSON.stringify(
+        dados || {}
+      )
     }
   );
 }
@@ -1181,6 +937,12 @@ async function excluirPacoteAdmin(
 ) {
   if (!(await verificarAdmin())) {
     return null;
+  }
+
+  if (!id) {
+    throw new Error(
+      'ID do pacote não informado.'
+    );
   }
 
   return api(
@@ -1202,11 +964,13 @@ async function carregarConfiguracaoPagamento() {
 
   try {
     const data =
-      await api('/admin/payment-config');
+      await api(
+        '/admin/payment-config'
+      );
 
     window.IGC_PAYMENT_CONFIG =
-      data.config ||
-      data.configuration ||
+      data.payment_config ||
+      data.paymentConfig ||
       data;
 
     return window.IGC_PAYMENT_CONFIG;
@@ -1229,36 +993,15 @@ async function salvarConfiguracaoPagamento(
     return null;
   }
 
-  try {
-    const data =
-      await api(
-        '/admin/payment-config',
-        {
-          method: 'PUT',
-          body: JSON.stringify(dados)
-        }
-      );
-
-    window.IGC_PAYMENT_CONFIG =
-      data.config ||
-      data.configuration ||
-      data;
-
-    message(
-      'Configuração de pagamento salva.'
-    );
-
-    return data;
-
-  } catch (error) {
-    message(
-      error.message ||
-      'Não foi possível salvar a configuração.',
-      true
-    );
-
-    return null;
-  }
+  return api(
+    '/admin/payment-config',
+    {
+      method: 'PUT',
+      body: JSON.stringify(
+        dados || {}
+      )
+    }
+  );
 }
 /* =========================================================
    UTILITÁRIOS PARA FORMULÁRIOS
@@ -1444,7 +1187,6 @@ async function salvarInfinitePay() {
     dados
   );
 }
-
 /* =========================================================
    INICIALIZAÇÃO AUTOMÁTICA
 ========================================================= */
@@ -1460,116 +1202,135 @@ document.addEventListener(
     if (loginForm) {
       loginForm.addEventListener(
         'submit',
-        fazerLogin
+        async event => {
+          event.preventDefault();
+
+          const usuario =
+            pegarValor(
+              'loginUser',
+              pegarValor(
+                'usernameLogin',
+                pegarValor('emailLogin')
+              )
+            ).trim();
+
+          const senha =
+            pegarValor(
+              'loginPassword',
+              pegarValor(
+                'passwordLogin'
+              )
+            );
+
+          try {
+            await login(
+              usuario,
+              senha
+            );
+          } catch (error) {
+            message(
+              error.message ||
+              'Não foi possível entrar.',
+              true
+            );
+          }
+        }
       );
     }
 
     const registerForm =
       el('registerForm') ||
-      el('formRegister') ||
-      el('cadastroForm');
+      el('formRegister');
 
     if (registerForm) {
       registerForm.addEventListener(
         'submit',
-        registrar
+        async event => {
+          event.preventDefault();
+
+          try {
+            await registrarUsuario();
+          } catch (error) {
+            message(
+              error.message ||
+              'Não foi possível realizar o cadastro.',
+              true
+            );
+          }
+        }
       );
     }
 
-    const logoutButtons =
-      document.querySelectorAll(
-        '[data-action="logout"], .logout-button, #logout'
-      );
+    const adminPage =
+      document.querySelector(
+        '[data-admin-page]'
+      ) ||
+      el('adminPanel') ||
+      el('admin');
 
-    logoutButtons.forEach(
-      button => {
-        button.addEventListener(
-          'click',
-          logout
-        );
-      }
-    );
+    if (adminPage) {
+      verificarAdmin()
+        .then(ok => {
+          if (!ok) return;
 
-    if (
-      document.body &&
-      (
-        document.body.dataset.page === 'usuario' ||
-        window.location.pathname.endsWith(
-          'usuario.html'
-        )
-      )
-    ) {
-      iniciarPainelUsuario();
-    }
-
-    if (
-      document.body &&
-      (
-        document.body.dataset.page === 'admin' ||
-        window.location.pathname.endsWith(
-          'admin.html'
-        )
-      )
-    ) {
-      carregarAdminDashboard();
-      carregarUsuariosAdmin();
-      carregarPedidosAdmin();
-      carregarPacotesAdmin();
-      carregarConfiguracaoPagamento();
+          carregarAdminDashboard();
+          carregarUsuariosAdmin();
+          carregarPedidosAdmin();
+          carregarPacotesAdmin();
+          carregarConfiguracaoPagamento();
+        })
+        .catch(error => {
+          console.error(
+            'Erro ao inicializar painel admin:',
+            error
+          );
+        });
     }
   }
 );
 
 /* =========================================================
-   COMPATIBILIDADE COM HTML ANTIGO
+   COMPATIBILIDADE GLOBAL
 ========================================================= */
 
-window.api = api;
-window.el = el;
-window.show = show;
-window.message = message;
-window.logout = logout;
-window.verificarAutenticacao =
-  verificarAutenticacao;
-window.fazerLogin = fazerLogin;
-window.registrar = registrar;
-window.carregarUsuario =
-  carregarUsuario;
-window.carregarPacotes =
-  carregarPacotes;
-window.comprarPacote =
-  comprarPacote;
-window.carregarPedidos =
-  carregarPedidos;
 window.carregarAdminDashboard =
   carregarAdminDashboard;
+
 window.carregarUsuariosAdmin =
   carregarUsuariosAdmin;
+
 window.editarUsuarioAdmin =
   editarUsuarioAdmin;
+
 window.adicionarMinutosAdmin =
   adicionarMinutosAdmin;
+
 window.adicionarMinutosAdminPorEmail =
   adicionarMinutosAdminPorEmail;
+
 window.carregarPedidosAdmin =
   carregarPedidosAdmin;
+
 window.carregarPacotesAdmin =
   carregarPacotesAdmin;
+
 window.criarPacoteAdmin =
   criarPacoteAdmin;
+
 window.editarPacoteAdmin =
   editarPacoteAdmin;
+
 window.excluirPacoteAdmin =
   excluirPacoteAdmin;
+
 window.carregarConfiguracaoPagamento =
   carregarConfiguracaoPagamento;
+
 window.salvarConfiguracaoPagamento =
   salvarConfiguracaoPagamento;
+
 window.salvarPacoteDoFormulario =
   salvarPacoteDoFormulario;
+
 window.salvarInfinitePay =
   salvarInfinitePay;
-window.formatarMinutos =
-  formatarMinutos;
-window.formatarMoeda =
-  formatarMoeda;
