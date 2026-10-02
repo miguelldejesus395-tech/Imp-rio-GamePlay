@@ -100,7 +100,26 @@ function salvarToken(token, lembrar = true) {
     token
   );
 }
+function salvarSessao(
+  novoToken,
+  novoRole = 'user',
+  lembrar = true
+) {
+  salvarToken(
+    novoToken,
+    lembrar
+  );
 
+  const storage =
+    lembrar
+      ? localStorage
+      : sessionStorage;
+
+  storage.setItem(
+    'igc_role',
+    novoRole || 'user'
+  );
+}
 function obterToken() {
   return (
     localStorage.getItem('igc_token') ||
