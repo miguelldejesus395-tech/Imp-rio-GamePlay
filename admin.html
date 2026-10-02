@@ -1464,4 +1464,337 @@
               </h2>
 
               <p>
-                
+                                              Gerencie os planos vendidos no GameCloud.
+              </p>
+
+            </div>
+
+
+            <button
+              class="btn btn-green"
+              onclick="novoPacote()"
+            >
+              ➕ Novo pacote
+            </button>
+
+          </div>
+
+
+          <div
+            id="adminPackages"
+            class="packages-grid"
+          >
+
+            <div class="empty">
+              Carregando pacotes...
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- PACKAGE EDITOR -->
+
+        <div
+          id="packageEditor"
+          class="card"
+          style="display:none"
+        >
+
+          <div class="card-head">
+
+            <div>
+
+              <h2 id="packageEditorTitle">
+                📦 Novo pacote
+              </h2>
+
+              <p>
+                Configure os dados do pacote.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <input
+            type="hidden"
+            id="packageId"
+          >
+
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label>
+                Nome
+              </label>
+
+              <input
+                id="packageName"
+                type="text"
+                placeholder="Nome do pacote"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Minutos
+              </label>
+
+              <input
+                id="packageMinutes"
+                type="number"
+                min="1"
+                placeholder="Ex.: 60"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Preço
+              </label>
+
+              <input
+                id="packagePrice"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex.: 10.00"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Ordem
+              </label>
+
+              <input
+                id="packageOrder"
+                type="number"
+                min="0"
+                value="0"
+              >
+
+            </div>
+
+
+            <div class="field full">
+
+              <label>
+                Descrição
+              </label>
+
+              <textarea
+                id="packageDescription"
+                placeholder="Descrição do pacote"
+              ></textarea>
+
+            </div>
+
+          </div>
+
+
+          <div class="toggle-row">
+
+            <div>
+
+              <strong>
+                Pacote ativo
+              </strong>
+
+              <small>
+                Se desativado, não aparecerá para os clientes.
+              </small>
+
+            </div>
+
+
+            <label class="switch">
+
+              <input
+                type="checkbox"
+                id="packageActive"
+                checked
+              >
+
+              <span class="slider"></span>
+
+            </label>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button
+              class="btn btn-green"
+              onclick="salvarPacoteTela()"
+            >
+              💾 Salvar pacote
+            </button>
+
+
+            <button
+              class="btn btn-red"
+              id="deletePackageButton"
+              onclick="excluirPacoteAtual()"
+              style="display:none"
+            >
+              🗑️ Excluir
+            </button>
+
+
+            <button
+              class="btn btn-red"
+              onclick="fecharEditorPacote()"
+            >
+              Cancelar
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+            border: 0;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-weight: 800;
+      color: white;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      box-shadow: 0 8px 25px rgba(79,140,255,.16);
+    }
+
+    .btn:hover {
+      filter: brightness(1.1);
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, #16c98a, #35e5a1);
+      color: #06150f;
+    }
+
+    .btn-red {
+      background: rgba(255,92,108,.1);
+      color: #ff7f8a;
+      border: 1px solid rgba(255,92,108,.2);
+      box-shadow: none;
+    }
+
+    .btn-yellow {
+      background: linear-gradient(135deg, #ffb52e, #ffd35c);
+      color: #211600;
+    }
+
+    .btn-small {
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+
+    /* FORM */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 13px;
+    }
+
+    .form-grid.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: #aeb5d0;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      outline: none;
+      background: #0a0d19;
+      color: white;
+      border-radius: 10px;
+      padding: 11px 12px;
+    }
+
+    .field textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(79,140,255,.5);
+      box-shadow: 0 0 0 3px rgba(79,140,255,.08);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    /* TABLE */
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      color: #747c9b;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      padding: 11px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 13px 11px;
+      border-bottom: 1px solid rgba(255,255,255,.055);
+      font-size: 12px;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255,255,255,.015);
+    }
+
+    .user-cell {
+      display: flex;
