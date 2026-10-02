@@ -2495,3 +2495,330 @@
       }
 
     } 
+      }
+
+      async function carregarPagamentoTela() {
+
+        try {
+
+          const response =
+            await fetch('/api/admin/payment-config', {
+              headers: {
+                Authorization:
+                  'Bearer ' + (
+                    typeof obterToken === 'function'
+                      ? obterToken()
+                      : ''
+                  )
+              }
+            });
+
+          const data =
+            await response.json();
+
+          if (!response.ok || !data.ok) {
+            throw new Error(
+              data.error ||
+              'Não foi possível carregar a configuração de pagamento.'
+            );
+          }
+
+          const config =
+            data.config ||
+            data.payment_config ||
+            data.paymentConfig ||
+            {};
+
+          const pixAtivo =
+            document.getElementById('pixAtivo');
+
+          const cartaoAtivo =
+            document.getElementById('cartaoAtivo');
+
+          const infinitePayAtivo =
+            document.getElementById('infinitePayAtivo');
+
+          const infinitePayHandle =
+            document.getElementById('infinitePayHandle');
+
+          if (pixAtivo) {
+            pixAtivo.checked =
+              Boolean(config.pix_ativo);
+          }
+
+          if (cartaoAtivo) {
+            cartaoAtivo.checked =
+              Boolean(config.cartao_ativo);
+          }
+
+          if (infinitePayAtivo) {
+            infinitePayAtivo.checked =
+              Boolean(config.infinitepay_ativo);
+          }
+
+          if (infinitePayHandle) {
+            infinitePayHandle.value =
+              config.infinitepay_handle || '';
+          }
+
+        } catch (error) {
+
+          mostrarAviso(
+            error.message ||
+            'Erro ao carregar pagamentos.',
+            true
+          );
+
+        }
+
+      }
+
+
+      async function salvarPagamentoTela() {
+
+        try {
+
+          if (
+            typeof salvarInfinitePay ===
+            'function'
+          ) {
+
+            await salvarInfinitePay();
+
+          } else {
+
+            const token =
+              typeof obterToken === 'function'
+                ? obterToken()
+                : '';
+
+            const body = {
+
+              pix_ativo:
+                Boolean(
+                  document.getElementById(
+                    'pixAtivo'
+                  )?.checked
+                ),
+
+              cartao_ativo:
+                Boolean(
+                  document.getElementById(
+                    'cartaoAtivo'
+                  )?.checked
+                ),
+
+              infinitepay_ativo:
+                Boolean(
+                  document.getElementById(
+                    'infinitePayAtivo'
+                  )?.checked
+                ),
+
+              infinitepay_handle:
+                (
+                  document.getElementById(
+                    'infinitePayHandle'
+                  )?.value || ''
+                ).trim()
+
+            };
+
+            const response =
+              await fetch(
+                '/api/admin/payment-config',
+                {
+                  method: 'PUT',
+
+                  headers: {
+                    'Content-Type':
+                      'application/json',
+
+                    Authorization:
+                      'Bearer ' + token
+                  },
+
+                  body:
+                    JSON.stringify(body)
+                }
+              );
+
+            const data =
+              await response.json();
+
+            if (
+              !response.ok ||
+              !data.ok
+            ) {
+
+              throw new Error(
+                data.error ||
+                'Não foi possível salvar o pagamento.'
+              );
+
+            }
+
+          }
+
+          mostrarAviso(
+            'Configuração de pagamento salva com sucesso.'
+          );
+
+          await carregarPagamentoTela();
+
+        } catch (error) {
+
+          mostrarAviso(
+            error.message ||
+            'Erro ao salvar pagamento.',
+            true
+          );
+
+        }
+
+      }
+
+
+      async function atualizarTudo() {
+
+        try {
+
+          if (
+            typeof carregarDashboardAdmin ===
+            'function'
+          ) {
+            await carregarDashboardAdmin();
+          }
+
+          if (
+            typeof carregarUsuariosAdmin ===
+            'function'
+          ) {
+            await carregarUsuariosAdmin();
+          }
+
+          if (
+            typeof carregarPacotesAdmin ===
+            'function'
+          ) {
+            await carregarPacotesAdmin();
+          }
+
+          renderUsuarios();
+
+          renderPacotes();
+
+          await carregarPedidosTela();
+
+          await carregarPagamentoTela();
+
+        } catch (error) {
+
+          mostrarAviso(
+            error.message ||
+            'Não foi possível atualizar o painel.',
+            true
+          );
+
+        }
+
+      }
+
+
+      function logout() {
+
+        try {
+
+          localStorage.removeItem('igc_token');
+          localStorage.removeItem('igc_role');
+
+          sessionStorage.removeItem('igc_token');
+          sessionStorage.removeItem('igc_role');
+
+        } catch (error) {
+          console.warn(error);
+        }
+
+        window.location.href =
+          'index.html';
+
+      }
+
+
+      document.addEventListener(
+        'DOMContentLoaded',
+        async function () {
+
+          showAdminPage('dashboard');
+
+          await atualizarTudo();
+
+        }
+      );
+
+
+      window.mostrarAviso =
+        mostrarAviso;
+
+      window.showAdminPage =
+        showAdminPage;
+
+      window.toggleMobileMenu =
+        toggleMobileMenu;
+
+      window.renderUsuarios =
+        renderUsuarios;
+
+      window.filtrarUsuarios =
+        filtrarUsuarios;
+
+      window.editarUsuarioTela =
+        editarUsuarioTela;
+
+      window.fecharEditorUsuario =
+        fecharEditorUsuario;
+
+      window.salvarEdicaoUsuario =
+        salvarEdicaoUsuario;
+
+      window.adicionarMinutosTelaAdmin =
+        adicionarMinutosTelaAdmin;
+
+      window.renderPacotes =
+        renderPacotes;
+
+      window.novoPacote =
+        novoPacote;
+
+      window.editarPacoteTela =
+        editarPacoteTela;
+
+      window.salvarPacoteTela =
+        salvarPacoteTela;
+
+      window.excluirPacoteAtual =
+        excluirPacoteAtual;
+
+      window.fecharEditorPacote =
+        fecharEditorPacote;
+
+      window.carregarPedidosTela =
+        carregarPedidosTela;
+
+      window.carregarPagamentoTela =
+        carregarPagamentoTela;
+
+      window.salvarPagamentoTela =
+        salvarPagamentoTela;
+
+      window.atualizarTudo =
+        atualizarTudo;
+
+      window.logout =
+        logout;
+
+    </script>
+
+  </body>
+
+</html>
