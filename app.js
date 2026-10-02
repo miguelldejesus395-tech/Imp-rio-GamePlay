@@ -1223,10 +1223,7 @@ document.addEventListener(
             );
 
           try {
-            await login(
-              usuario,
-              senha
-            );
+            await registrar(event);
           } catch (error) {
             message(
               error.message ||
