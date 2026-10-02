@@ -1448,5 +1448,5 @@ window.salvarConfiguracaoPagamento =
 window.salvarPacoteDoFormulario =
   salvarPacoteDoFormulario;
 
-window.salvarInfinitePay =
-  salvarInfinitePay;
+window.adicionarMinutosTela =
+  adicionarMinutosTela;
