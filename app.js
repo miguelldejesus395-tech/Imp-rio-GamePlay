@@ -1365,7 +1365,7 @@ document.addEventListener(
           event.preventDefault();
 
           try {
-            await registrarUsuario();
+            await registrar(event);
           } catch (error) {
             message(
               error.message ||
