@@ -801,6 +801,42 @@ async function handleApi(req, res) {
     return true;
   }
 
+   /*
+   * =========================================================
+   * USUÁRIO - INICIAR FIVEM
+   * =========================================================
+   */
+
+  if (
+    pathname === '/api/stream/start' &&
+    method === 'POST'
+  ) {
+    const agentId =
+      String(lastStreamAgentId || '').trim();
+
+    if (!agentId) {
+      sendJson(res, 404, {
+        ok: false,
+        error: 'Nenhum Stream Agent online.'
+      });
+
+      return true;
+    }
+
+    streamCommands.set(
+      agentId,
+      'start_fivem'
+    );
+
+    sendJson(res, 200, {
+      ok: true,
+      agentId,
+      command: 'start_fivem',
+      message: 'FiveM autorizado para iniciar.'
+    });
+
+    return true;
+  } 
   /*
    * =========================================================
    * ADMIN - ENVIAR COMANDO PARA O STREAM AGENT
