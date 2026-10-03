@@ -851,7 +851,83 @@
         message.className = 'message error';
       }
     }
+    async function redefinirSenha() {
+  const params = new URLSearchParams(
+    window.location.search
+  );
 
+  const token = params.get('reset');
+
+  const password =
+    document.getElementById('resetPassword').value;
+
+  const confirm =
+    document.getElementById('resetPasswordConfirm').value;
+
+  const message =
+    document.getElementById('messageReset');
+
+  if (!token) {
+    message.textContent =
+      'Link de recuperação inválido.';
+    message.className =
+      'message error';
+    return;
+  }
+
+  if (password.length < 6) {
+    message.textContent =
+      'A senha precisa ter pelo menos 6 caracteres.';
+    message.className =
+      'message error';
+    return;
+  }
+
+  if (password !== confirm) {
+    message.textContent =
+      'As senhas não são iguais.';
+    message.className =
+      'message error';
+    return;
+  }
+
+  try {
+    if (typeof api !== 'function') {
+      throw new Error(
+        'Sistema de comunicação indisponível.'
+      );
+    }
+
+    const data = await api('/password/reset', {
+      method: 'POST',
+      body: JSON.stringify({
+        token,
+        password
+      })
+    });
+
+    message.textContent =
+      data.message ||
+      'Senha alterada com sucesso.';
+
+    message.className =
+      'message success';
+
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+
+  } catch (error) {
+    message.textContent =
+      error.message ||
+      'Não foi possível redefinir a senha.';
+
+    message.className =
+      'message error';
+  }
+}
     document.addEventListener('DOMContentLoaded', () => {
 
       const adminForm =
