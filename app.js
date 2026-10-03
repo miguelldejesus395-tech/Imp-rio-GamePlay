@@ -187,31 +187,7 @@ function limparToken() {
   );
 
 }
-      ? localStorage
-      : sessionStorage;
-
-  storage.setItem(
-    'igc_role',
-    novoRole || 'user'
-  );
-}
-function obterToken() {
-  return (
-    localStorage.getItem('igc_token') ||
-    sessionStorage.getItem('igc_token') ||
-    ''
-  );
-}
-
-function limparToken() {
-  localStorage.removeItem(
-    'igc_token'
-  );
-
-  sessionStorage.removeItem(
-    'igc_token'
-  );
-}
+    
 
 async function verificarAutenticacao() {
   const token = obterToken();
