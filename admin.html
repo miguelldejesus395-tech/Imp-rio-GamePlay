@@ -1137,7 +1137,33 @@
               <label>Quantidade de minutos</label>
               <input id="giftMinutes" type="number" min="1" placeholder="Ex.: 120">
             </div>
+<div class="field">
+  <label>E-mail do usuário</label>
+  <input
+    id="giftUserEmail"
+    type="email"
+    placeholder="email@exemplo.com"
+  >
+</div>
 
+<div class="field">
+  <label>Quantidade de minutos por e-mail</label>
+  <input
+    id="giftEmailMinutes"
+    type="number"
+    min="1"
+    placeholder="Ex.: 120"
+  >
+</div>
+
+<div class="actions">
+  <button
+    class="btn btn-yellow"
+    onclick="adicionarMinutosPorEmailTela()"
+  >
+    📧 Adicionar minutos por e-mail
+  </button>
+</div>
           </div>
 
           <div class="actions">
