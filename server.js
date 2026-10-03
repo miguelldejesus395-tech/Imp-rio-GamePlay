@@ -2554,14 +2554,16 @@ async function handleApi(req, res) {
         ascending: false
       });
 
-    if (error) {
-      sendJson(res, 500, {
-        ok: false,
-        error: error.message
-      });
-
-      return true;
-    }
+    pedido.price != null
+  ? pedido.price
+  : pedido.valor != null
+    ? pedido.valor
+    : (
+      Number(
+        pedido.priceCents ||
+        0
+      ) / 100
+    )
 
     sendJson(res, 200, {
       ok: true,
