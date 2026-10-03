@@ -1125,6 +1125,111 @@ async function handleApi(req, res) {
     pathname === '/api/register' &&
     method === 'POST'
   ) {
+      /*
+    ---------------------------------------------------------
+    REDEFINIÇÃO DE SENHA
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/password/reset' &&
+    method === 'POST'
+  ) {
+    try {
+      const body = await readJson(req);
+
+      const token =
+        String(body.token || '').trim();
+
+      const password =
+        String(body.password || '');
+
+      if (!token) {
+        sendJson(res, 400, {
+          ok: false,
+          error: 'Token de recuperação inválido.'
+        });
+
+        return true;
+      }
+
+      if (password.length < 6) {
+        sendJson(res, 400, {
+          ok: false,
+          error:
+            'A senha precisa ter pelo menos 6 caracteres.'
+        });
+
+        return true;
+      }
+
+      const reset =
+        resetTokens.get(token);
+
+      if (!reset) {
+        sendJson(res, 400, {
+          ok: false,
+          error:
+            'O link de recuperação é inválido ou expirou.'
+        });
+
+        return true;
+      }
+
+      if (
+        Date.now() > reset.expiresAt
+      ) {
+        resetTokens.delete(token);
+
+        sendJson(res, 400, {
+          ok: false,
+          error:
+            'O link de recuperação expirou.'
+        });
+
+        return true;
+      }
+
+      const passwordHash =
+        hashPassword(password);
+
+      const { error } =
+        await supabase
+          .from('usuarios')
+          .update({
+            password: passwordHash
+          })
+          .eq('id', reset.usuarioId);
+
+      if (error) {
+        sendJson(res, 500, {
+          ok: false,
+          error:
+            'Não foi possível atualizar a senha.'
+        });
+
+        return true;
+      }
+
+      resetTokens.delete(token);
+
+      sendJson(res, 200, {
+        ok: true,
+        message:
+          'Senha alterada com sucesso.'
+      });
+
+      return true;
+
+    } catch (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error:
+          'Não foi possível redefinir a senha.'
+      });
+
+      return true;
+    }
+  }
     const body = await readJson(req);
       const username = normalizeUsername(body.username);
       const email = normalizeEmail(body.email);
