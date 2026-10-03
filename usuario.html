@@ -1825,7 +1825,7 @@
         typeof verificarAutenticacao ===
         'function'
       ) {
-        if (!verificarAutenticacao()) {
+        if (!(await verificarAutenticacao())) {
           return;
         }
       } else {
