@@ -1125,9 +1125,6 @@ async function handleApi(req, res) {
      const { data: found, error } = await supabase
   .from('usuarios')
   .select(
-    const { data: found, error } = await supabase
-  .from('usuarios')
-  .select(
     'id,username,email,password,minutos,plano,bloqueado,created_at'
   )
   .or(
@@ -1135,11 +1132,15 @@ async function handleApi(req, res) {
   )
   .limit(1)
   .maybeSingle();
-          error: 'Usuário ou senha incorretos.'
-        });
 
-        return true;
-      }
+if (error || !found) {
+  sendJson(res, 401, {
+    ok: false,
+    error: 'Usuário ou senha incorretos.'
+  });
+
+  return true;
+}
 
       if (found.bloqueado) {
         sendJson(res, 403, {
