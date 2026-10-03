@@ -1219,49 +1219,59 @@ async function handleApi(req, res) {
 
       return true;
     }
-  }
-  /*
-    ---------------------------------------------------------
-    REGISTRO
-    ---------------------------------------------------------
-  */
-  if (
-    pathname === '/api/register' &&
-    method === 'POST'
-  ) {
+      /*
+  ---------------------------------------------------------
+  REGISTRO
+  ---------------------------------------------------------
+*/
+if (
+  pathname === '/api/register' &&
+  method === 'POST'
+) {
+  try {
     const body = await readJson(req);
-      const username = normalizeUsername(body.username);
-      const email = normalizeEmail(body.email);
-      const password = String(body.password || '');
 
-      if (username.length < 3) {
-        sendJson(res, 400, {
-          ok: false,
-          error: 'O usuário precisa ter pelo menos 3 caracteres.'
-        });
+    const username =
+      normalizeUsername(body.username);
 
-        return true;
-      }
+    const email =
+      normalizeEmail(body.email);
 
-      if (!validEmail(email)) {
-        sendJson(res, 400, {
-          ok: false,
-          error: 'Informe um e-mail válido.'
-        });
+    const password =
+      String(body.password || '');
 
-        return true;
-      }
+    if (username.length < 3) {
+      sendJson(res, 400, {
+        ok: false,
+        error:
+          'O usuário precisa ter pelo menos 3 caracteres.'
+      });
 
-      if (password.length < 6) {
-        sendJson(res, 400, {
-          ok: false,
-          error: 'A senha precisa ter pelo menos 6 caracteres.'
-        });
+      return true;
+    }
 
-        return true;
-      }
+    if (!validEmail(email)) {
+      sendJson(res, 400, {
+        ok: false,
+        error:
+          'Informe um e-mail válido.'
+      });
 
-      const { data: existingUser } = await supabase
+      return true;
+    }
+
+    if (password.length < 6) {
+      sendJson(res, 400, {
+        ok: false,
+        error:
+          'A senha precisa ter pelo menos 6 caracteres.'
+      });
+
+      return true;
+    }
+
+    const { data: existingUser } =
+      await supabase
         .from('usuarios')
         .select('id,username,email')
         .or(
@@ -1270,18 +1280,21 @@ async function handleApi(req, res) {
         .limit(1)
         .maybeSingle();
 
-      if (existingUser) {
-        sendJson(res, 409, {
-          ok: false,
-          error: 'Usuário ou e-mail já cadastrado.'
-        });
+    if (existingUser) {
+      sendJson(res, 409, {
+        ok: false,
+        error:
+          'Usuário ou e-mail já cadastrado.'
+      });
 
-        return true;
-      }
+      return true;
+    }
 
-      const passwordHash = hashPassword(password);
+    const passwordHash =
+      hashPassword(password);
 
-      const { data: user, error } = await supabase
+    const { data: user, error } =
+      await supabase
         .from('usuarios')
         .insert({
           username,
@@ -1296,23 +1309,7 @@ async function handleApi(req, res) {
         )
         .single();
 
-      if (error) {
-        sendJson(res, 400, {
-          ok: false,
-          error: error.message
-        });
-
-        return true;
-      }
-
-      sendJson(res, 201, {
-        ok: true,
-        user
-      });
-
-      return true;
-
-    } catch (error) {
+    if (error) {
       sendJson(res, 400, {
         ok: false,
         error: error.message
@@ -1320,16 +1317,23 @@ async function handleApi(req, res) {
 
       return true;
     }
-  }
 
-  /*
-    ---------------------------------------------------------
-    LOGIN
-    ---------------------------------------------------------
-  */
-  if (
-    pathname === '/api/login' &&
-    method === 'POST'
+    sendJson(res, 201, {
+      ok: true,
+      user
+    });
+
+    return true;
+
+  } catch (error) {
+    sendJson(res, 400, {
+      ok: false,
+      error: error.message
+    });
+
+    return true;
+  }
+}
   ) {
     try {
       const body = await readJson(req);
