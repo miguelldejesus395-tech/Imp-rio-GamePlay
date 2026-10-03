@@ -125,15 +125,20 @@ function parseUrl(req) {
 }
 
 function routePath(req) {
-  
-const { data: found, error } = await supabase
-  .from('usuarios')
-  .select(
-    'id,username,email,password,minutos,plano,bloqueado,created_at'
-  )
-  .or(
-    `username.eq.${user},email.eq.${user}`
-  )
+  function routePath(req) {
+  const pathname =
+    new URL(
+      req.url,
+      `http://${req.headers.host || 'localhost'}`
+    ).pathname;
+
+  const prefix = '/api/';
+
+  return pathname
+    .slice(prefix.length)
+    .replace(/^\/+/, '')
+    .split('/')[0];
+}
   .limit(1)
   .maybeSingle();
   return pathname.slice(prefix.length).replace(/^\/+/, '').split('/')[0];
@@ -1120,15 +1125,16 @@ async function handleApi(req, res) {
         return true;
       }
 
-      /*
-        USUÁRIO
-      */
       const { data: found, error } = await supabase
-        .from('usuarios')
-        .select(
-          'id,username,email,password,minutos,plano,bloqueado,created_at'
-        )
-        .eq('username', user)
+  .from('usuarios')
+  .select(
+    'id,username,email,password,minutos,plano,bloqueado,created_at'
+  )
+  .or(
+    `username.eq.${user},email.eq.${user}`
+  )
+  .limit(1)
+  .maybeSingle();
         .maybeSingle();
 
       if (error || !found) {
