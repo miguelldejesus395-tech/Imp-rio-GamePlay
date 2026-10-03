@@ -1334,7 +1334,10 @@ if (
     return true;
   }
 }
-  ) {
+  if (
+  pathname === '/api/login' &&
+  method === 'POST'
+) {
     try {
       const body = await readJson(req);
 
