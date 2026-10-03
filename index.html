@@ -929,7 +929,14 @@
   }
 }
     document.addEventListener('DOMContentLoaded', () => {
+      const resetToken =
+  new URLSearchParams(
+    window.location.search
+  ).get('reset');
 
+if (resetToken) {
+  show('reset');
+}
       const adminForm =
         document.getElementById('adminLoginForm');
 
