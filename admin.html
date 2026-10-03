@@ -2681,12 +2681,12 @@ const infinitePayHandle =
       async function atualizarTudo() {
 
         try {
-
-          if (
-            typeof carregarDashboardAdmin ===
-            'function'
-          ) {
-            await carregarDashboardAdmin();
+if (
+  typeof carregarAdminDashboard ===
+  'function'
+) {
+  await carregarAdminDashboard();
+}
           }
 
           if (
