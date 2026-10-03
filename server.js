@@ -1038,9 +1038,6 @@ async function handleApi(req, res) {
     ---------------------------------------------------------
   */
   if (
-    pathname === '/api/register' &&
-    method === 'POST'
-  ) {
     /*
   ---------------------------------------------------------
   RECUPERAÇÃO DE SENHA
@@ -1075,16 +1072,13 @@ if (
     if (error) {
       sendJson(res, 500, {
         ok: false,
-        error: 'Não foi possível processar a recuperação.'
+        error:
+          'Não foi possível processar a recuperação.'
       });
 
       return true;
     }
 
-    /*
-      Por segurança, não revelamos se
-      o e-mail está cadastrado.
-    */
     if (!user) {
       sendJson(res, 200, {
         ok: true,
@@ -1128,7 +1122,10 @@ if (
     return true;
   }
 }
-    try {
+    pathname === '/api/register' &&
+    method === 'POST'
+  ) {
+    
       const body = await readJson(req);
 
       const username = normalizeUsername(body.username);
