@@ -1115,17 +1115,7 @@ async function handleApi(req, res) {
       return true;
     }
   }
-
-  /*
-    ---------------------------------------------------------
-    REGISTRO
-    ---------------------------------------------------------
-  */
-  if (
-    pathname === '/api/register' &&
-    method === 'POST'
-  ) {
-      /*
+    /*
     ---------------------------------------------------------
     REDEFINIÇÃO DE SENHA
     ---------------------------------------------------------
@@ -1230,6 +1220,15 @@ async function handleApi(req, res) {
       return true;
     }
   }
+  /*
+    ---------------------------------------------------------
+    REGISTRO
+    ---------------------------------------------------------
+  */
+  if (
+    pathname === '/api/register' &&
+    method === 'POST'
+  ) {
     const body = await readJson(req);
       const username = normalizeUsername(body.username);
       const email = normalizeEmail(body.email);
