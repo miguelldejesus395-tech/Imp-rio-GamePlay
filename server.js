@@ -2640,7 +2640,6 @@ async function handleApi(req, res) {
 
       return true;
 
-      activeServers: streamAgents.size
     } catch (error) {
       sendJson(res, 500, {
         ok: false,
