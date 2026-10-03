@@ -2554,15 +2554,6 @@ async function handleApi(req, res) {
         ascending: false
       });
 
-    pedido.price != null
-  ? pedido.price
-  : pedido.valor != null
-    ? pedido.valor
-    : (
-      Number(
-        pedido.priceCents ||
-        0
-      ) / 100
     )
 
     sendJson(res, 200, {
