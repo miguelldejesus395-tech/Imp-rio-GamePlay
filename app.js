@@ -45,25 +45,23 @@ function api(path, options = {}) {
       );
     }
 
-    return data;
-  });
-}
-
-function el(id) {
-  return document.getElementById(id);
-}
-
-function show(id, visible = true) {
-  const node = el(id);
+    function message(text, isError = false) {
+  const node =
+    el('message') ||
+    el('messageRegister') ||
+    el('messageLogin');
 
   if (!node) {
     return;
   }
 
-  node.style.display =
-    visible ? '' : 'none';
-}
+  node.textContent = text || '';
 
+  node.style.color =
+    isError
+      ? '#ff5c7a'
+      : '';
+}
 function message(text, isError = false) {
   const node =
     el('message') ||
