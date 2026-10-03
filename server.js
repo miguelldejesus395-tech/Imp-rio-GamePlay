@@ -2554,8 +2554,6 @@ async function handleApi(req, res) {
         ascending: false
       });
 
-    )
-
     sendJson(res, 200, {
       ok: true,
       orders: data || []
