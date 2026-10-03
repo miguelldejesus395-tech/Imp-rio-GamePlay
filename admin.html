@@ -2065,138 +2065,134 @@
   }
 
 }
-    function renderPacotes() {
+      function renderPacotes() {
 
-      const container =
-        document.getElementById(
-          'adminPackages'
-        );
+  const containers = [
+    document.getElementById(
+      'adminPackages'
+    ),
+    document.getElementById(
+      'dashboardPackages'
+    )
+  ].filter(Boolean);
 
-      if (!container) return;
+  if (!containers.length) return;
 
+  const pacotes =
+    Array.isArray(
+      window.IGC_ADMIN_PACKAGES
+    )
+      ? window.IGC_ADMIN_PACKAGES
+      : [];
 
-      const pacotes =
-        Array.isArray(
-          window.IGC_ADMIN_PACKAGES
-        )
-          ? window.IGC_ADMIN_PACKAGES
-          : [];
+  if (!pacotes.length) {
 
+    containers.forEach(container => {
+      container.innerHTML = `
+        <div class="empty">
+          Nenhum pacote cadastrado.
+        </div>
+      `;
+    });
 
-      if (!pacotes.length) {
-
-        container.innerHTML = `
-          <div class="empty">
-            Nenhum pacote cadastrado.
-          </div>
-        `;
-
-        return;
-
-      }
-
-
-      container.innerHTML =
-        pacotes.map(pacote => `
-
-          <div class="package-card">
-
-            <div class="package-card-head">
-
-              <div>
-
-                <strong>
-                  ${esc(
-                    pacote.name ||
-                    pacote.nome ||
-                    'Pacote'
-                  )}
-                </strong>
-
-                <small>
-                  ${Number(
-                    pacote.minutes ||
-                    pacote.minutos ||
-                    0
-                  )} minutos
-                </small>
-
-              </div>
-
-       <span class="status ${
-  (
-    pacote.active !== undefined
-      ? pacote.active
-      : pacote.ativo
-  ) === false
-    ? 'red'
-    : 'green'
-}">
-
-  ${
-    (
-      pacote.active !== undefined
-        ? pacote.active
-        : pacote.ativo
-    ) === false
-      ? 'Inativo'
-      : 'Ativo'
+    return;
   }
 
-</span>       
+  const html =
+    pacotes.map(pacote => `
 
-            </div>
+      <div class="package-card">
 
+        <div class="package-card-head">
 
-            <div class="package-price">
+          <div>
 
-             ${moeda(
-  pacote.priceCents != null
-    ? Number(
-        pacote.priceCents
-      ) / 100
-    : pacote.price != null
-      ? pacote.price
-      : pacote.preco
-)} 
-
-            </div>
-
-
-            <p>
+            <strong>
               ${esc(
-                pacote.description ||
-                pacote.descricao ||
-                ''
+                pacote.name ||
+                pacote.nome ||
+                'Pacote'
               )}
-            </p>
+            </strong>
 
-
-            <div class="actions">
-
-              <button
-                class="btn btn-small"
-                onclick="editarPacoteTela('${esc(
-                  pacote.id || ''
-                )}')"
-              >
-                ✏️ Editar
-              </button>
-
-            </div>
+            <small>
+              ${Number(
+                pacote.minutes ||
+                pacote.minutos ||
+                0
+              )} minutos
+            </small>
 
           </div>
 
-        `).join('');
+          <span class="status ${
+            (
+              pacote.active !== undefined
+                ? pacote.active
+                : pacote.ativo
+            ) === false
+              ? 'red'
+              : 'green'
+          }">
 
-    }
-         function novoPacote() {
+            ${
+              (
+                pacote.active !== undefined
+                  ? pacote.active
+                  : pacote.ativo
+              ) === false
+                ? 'Inativo'
+                : 'Ativo'
+            }
 
-      const editor =
-        document.getElementById(
-          'packageEditor'
-        );
+          </span>
 
+        </div>
+
+        <div class="package-price">
+
+          ${moeda(
+            pacote.priceCents != null
+              ? Number(
+                  pacote.priceCents
+                ) / 100
+              : pacote.price != null
+                ? pacote.price
+                : pacote.preco
+          )}
+
+        </div>
+
+        <p>
+          ${esc(
+            pacote.description ||
+            pacote.descricao ||
+            ''
+          )}
+        </p>
+
+        <div class="actions">
+
+          <button
+            class="btn btn-small"
+            onclick="editarPacoteTela('${esc(
+              pacote.id || ''
+            )}')"
+          >
+            ✏️ Editar
+          </button>
+
+        </div>
+
+      </div>
+
+    `).join('');
+
+  containers.forEach(container => {
+    container.innerHTML = html;
+  });
+
+}
       if (editor) {
         editor.style.display = 'block';
       }
