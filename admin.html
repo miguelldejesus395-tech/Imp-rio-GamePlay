@@ -2196,6 +2196,8 @@
       if (editor) {
         editor.style.display = 'block';
       }
+}
+
 function novoPacote() {
 
   const editor =
@@ -2203,10 +2205,14 @@ function novoPacote() {
       'packageEditor'
     );
 
-      document.getElementById(
-        'packageEditorTitle'
-      ).textContent =
-        '📦 Novo pacote';
+  if (editor) {
+    editor.style.display = 'block';
+  }
+
+  document.getElementById(
+    'packageEditorTitle'
+  ).textContent =
+    '📦 Novo pacote';
 
 
       document.getElementById(
