@@ -2012,6 +2012,59 @@
     }
 
 
+      async function adicionarMinutosPorEmailTela() {
+
+  const email =
+    document.getElementById(
+      'giftUserEmail'
+    )?.value.trim();
+
+  const minutos =
+    Number(
+      document.getElementById(
+        'giftEmailMinutes'
+      )?.value || 0
+    );
+
+  try {
+
+    await adicionarMinutosAdminPorEmail(
+      email,
+      minutos
+    );
+
+    mostrarAviso(
+      'Minutos adicionados com sucesso.'
+    );
+
+    document.getElementById(
+      'giftUserEmail'
+    ).value = '';
+
+    document.getElementById(
+      'giftEmailMinutes'
+    ).value = '';
+
+    if (
+      typeof carregarUsuariosAdmin ===
+      'function'
+    ) {
+      await carregarUsuariosAdmin();
+    }
+
+    renderUsuarios();
+
+  } catch (erro) {
+
+    mostrarAviso(
+      erro.message ||
+      'Não foi possível adicionar os minutos.',
+      true
+    );
+
+  }
+
+}
     function renderPacotes() {
 
       const container =
