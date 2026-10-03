@@ -244,15 +244,11 @@ function makeOrderNSU() {
 }
 async function enviarEmailRecuperacao(email, token) {
   if (!RESEND_API_KEY) {
-    throw new Error(
-      'RESEND_API_KEY não configurada.'
-    );
+    throw new Error('RESEND_API_KEY não configurada no Render.');
   }
 
   if (!RESEND_FROM_EMAIL) {
-    throw new Error(
-      'RESEND_FROM_EMAIL não configurado.'
-    );
+    throw new Error('RESEND_FROM_EMAIL não configurado no Render.');
   }
 
   const link =
@@ -263,25 +259,24 @@ async function enviarEmailRecuperacao(email, token) {
     {
       method: 'POST',
       headers: {
-        'Authorization':
-          `Bearer ${RESEND_API_KEY}`,
-        'Content-Type':
-          'application/json'
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         from: RESEND_FROM_EMAIL,
         to: [email],
-        subject:
-          'Recuperação de senha - Império GamePlay',
+        subject: 'Recuperação de senha - Império GamePlay',
         html: `
           <div style="font-family:Arial,sans-serif">
-            <h2>Império GamePlay</h2>
+            <h2>👑 Império GamePlay</h2>
             <p>Recebemos uma solicitação para redefinir sua senha.</p>
+
             <p>
               <a href="${link}">
                 Redefinir minha senha
               </a>
             </p>
+
             <p>Este link expira em 30 minutos.</p>
             <p>Se você não solicitou isso, ignore este e-mail.</p>
           </div>
@@ -291,13 +286,14 @@ async function enviarEmailRecuperacao(email, token) {
   );
 
   if (!response.ok) {
-    const errorText =
-      await response.text();
+    const errorText = await response.text();
 
     throw new Error(
-      `Falha ao enviar e-mail: ${errorText}`
+      `Resend recusou o envio: ${errorText}`
     );
   }
+
+  return true;
 }
 /* =========================================================
    SESSÕES
