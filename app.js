@@ -1065,7 +1065,6 @@ function pegarCheckbox(
 /* =========================================================
    FORMULÁRIO DE PACOTE ADMIN
 ========================================================= */
-
 async function salvarPacoteDoFormulario(
   id = null
 ) {
@@ -1102,62 +1101,41 @@ async function salvarPacoteDoFormulario(
   };
 
   if (!dados.nome) {
-    message(
-      'Informe o nome do pacote.',
-      true
+    throw new Error(
+      'Informe o nome do pacote.'
     );
-
-    return;
   }
 
   if (dados.minutos <= 0) {
-    message(
-      'Informe uma quantidade válida de minutos.',
-      true
+    throw new Error(
+      'Informe uma quantidade válida de minutos.'
     );
-
-    return;
   }
 
   if (dados.preco < 0) {
-    message(
-      'Informe um preço válido.',
-      true
-    );
-
-    return;
-  }
-
-  try {
-    if (id) {
-      await editarPacoteAdmin(
-        id,
-        dados
-      );
-
-      message(
-        'Pacote atualizado com sucesso.'
-      );
-
-    } else {
-      await criarPacoteAdmin(
-        dados
-      );
-
-      message(
-        'Pacote criado com sucesso.'
-      );
-    }
-
-    await carregarPacotesAdmin();
-
-  } catch (error) {
-    message(
-      error.message ||
-      'Erro ao salvar pacote.',
-      true
+    throw new Error(
+      'Informe um preço válido.'
     );
   }
+
+  if (id) {
+
+    await editarPacoteAdmin(
+      id,
+      dados
+    );
+
+  } else {
+
+    await criarPacoteAdmin(
+      dados
+    );
+
+  }
+
+  await carregarPacotesAdmin();
+
+  return true;
 }
 
 /* =========================================================
