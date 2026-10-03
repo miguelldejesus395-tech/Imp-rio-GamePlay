@@ -125,16 +125,17 @@ function parseUrl(req) {
 }
 
 function routePath(req) {
-  return parseUrl(req).pathname;
-}
-
-function getRouteId(req, prefix) {
-  const pathname = routePath(req);
-
-  if (!pathname.startsWith(prefix)) {
-    return '';
-  }
-
+  
+const { data: found, error } = await supabase
+  .from('usuarios')
+  .select(
+    'id,username,email,password,minutos,plano,bloqueado,created_at'
+  )
+  .or(
+    `username.eq.${user},email.eq.${user}`
+  )
+  .limit(1)
+  .maybeSingle();
   return pathname.slice(prefix.length).replace(/^\/+/, '').split('/')[0];
 }
 
