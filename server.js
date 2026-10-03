@@ -1219,6 +1219,7 @@ async function handleApi(req, res) {
 
       return true;
     }
+    }
       /*
   ---------------------------------------------------------
   REGISTRO
