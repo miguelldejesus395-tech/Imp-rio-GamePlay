@@ -1041,6 +1041,93 @@ async function handleApi(req, res) {
     pathname === '/api/register' &&
     method === 'POST'
   ) {
+    /*
+  ---------------------------------------------------------
+  RECUPERAÇÃO DE SENHA
+  ---------------------------------------------------------
+*/
+if (
+  pathname === '/api/password/forgot' &&
+  method === 'POST'
+) {
+  try {
+    const body = await readJson(req);
+
+    const email =
+      normalizeEmail(body.email);
+
+    if (!validEmail(email)) {
+      sendJson(res, 400, {
+        ok: false,
+        error: 'Informe um e-mail válido.'
+      });
+
+      return true;
+    }
+
+    const { data: user, error } =
+      await supabase
+        .from('usuarios')
+        .select('id,email')
+        .eq('email', email)
+        .maybeSingle();
+
+    if (error) {
+      sendJson(res, 500, {
+        ok: false,
+        error: 'Não foi possível processar a recuperação.'
+      });
+
+      return true;
+    }
+
+    /*
+      Por segurança, não revelamos se
+      o e-mail está cadastrado.
+    */
+    if (!user) {
+      sendJson(res, 200, {
+        ok: true,
+        message:
+          'Se o e-mail estiver cadastrado, as instruções serão enviadas.'
+      });
+
+      return true;
+    }
+
+    const token =
+      crypto.randomBytes(32).toString('hex');
+
+    resetTokens.set(token, {
+      usuarioId: user.id,
+      email: user.email,
+      expiresAt:
+        Date.now() + RESET_TOKEN_TTL
+    });
+
+    await enviarEmailRecuperacao(
+      user.email,
+      token
+    );
+
+    sendJson(res, 200, {
+      ok: true,
+      message:
+        'Se o e-mail estiver cadastrado, as instruções serão enviadas.'
+    });
+
+    return true;
+
+  } catch (error) {
+    sendJson(res, 500, {
+      ok: false,
+      error:
+        'Não foi possível enviar o e-mail de recuperação.'
+    });
+
+    return true;
+  }
+}
     try {
       const body = await readJson(req);
 
