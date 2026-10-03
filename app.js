@@ -674,7 +674,7 @@ async function carregarAdminDashboard() {
           if (node) {
             node.textContent =
               id === 'totalVendas'
-                ? formatarMoeda(value)
+            ? moeda(value)
                 : String(value);
           }
         }
