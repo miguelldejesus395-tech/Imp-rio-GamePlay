@@ -123,17 +123,20 @@ function parseUrl(req) {
     `http://${req.headers.host || 'localhost'}`
   );
 }
-
 function routePath(req) {
-  const { data: found, error } = await supabase
-  .from('usuarios')
-  .select(
-    'id,username,email,password,minutos,plano,bloqueado,created_at'
-  )
-  .or(
-    `username.eq.${user},email.eq.${user}`
-  )
-  .limit(1)
+  const pathname =
+    new URL(
+      req.url,
+      `http://${req.headers.host || 'localhost'}`
+    ).pathname;
+
+  const prefix = '/api/';
+
+  return pathname
+    .slice(prefix.length)
+    .replace(/^\/+/, '')
+    .split('/')[0];
+}
   .maybeSingle();
 }
   .limit(1)
