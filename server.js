@@ -124,19 +124,10 @@ function parseUrl(req) {
   );
 }
 function routePath(req) {
-  const pathname =
-    new URL(
-      req.url,
-      `http://${req.headers.host || 'localhost'}`
-    ).pathname;
-
-  const prefix = '/api/';
-
-  return pathname
-    .slice(prefix.length)
-    .replace(/^\/+/, '')
-    .split('/')[0];
-
+  return new URL(
+    req.url,
+    `http://${req.headers.host || 'localhost'}`
+  ).pathname;
 }
 function readJson(req) {
   return new Promise((resolve, reject) => {
