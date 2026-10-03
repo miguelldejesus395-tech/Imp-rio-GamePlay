@@ -1038,7 +1038,11 @@ async function handleApi(req, res) {
     ---------------------------------------------------------
   */
   if (
-    /*
+    pathname === '/api/register' &&
+    method === 'POST'
+  ) {
+      const body = await readJson(req);
+/*
   ---------------------------------------------------------
   RECUPERAÇÃO DE SENHA
   ---------------------------------------------------------
@@ -1122,12 +1126,6 @@ if (
     return true;
   }
 }
-    pathname === '/api/register' &&
-    method === 'POST'
-  ) {
-    
-      const body = await readJson(req);
-
       const username = normalizeUsername(body.username);
       const email = normalizeEmail(body.email);
       const password = String(body.password || '');
