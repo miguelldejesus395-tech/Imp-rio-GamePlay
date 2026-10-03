@@ -2555,13 +2555,15 @@
               <td>
                 ${moeda(
                   pedido.price != null
-                    ? pedido.price
-                    : (
-                      Number(
-                        pedido.priceCents ||
-                        0
-                      ) / 100
-                    )
+  ? pedido.price
+  : pedido.valor != null
+    ? pedido.valor
+    : (
+      Number(
+        pedido.priceCents ||
+        0
+      ) / 100
+    )
                 )}
               </td>
 
