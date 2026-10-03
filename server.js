@@ -137,13 +137,20 @@ function routePath(req) {
     .replace(/^\/+/, '')
     .split('/')[0];
 }
-  .maybeSingle();
-}
-  .limit(1)
-  .maybeSingle();
-  return pathname.slice(prefix.length).replace(/^\/+/, '').split('/')[0];
-}
+function routePath(req) {
+  const pathname =
+    new URL(
+      req.url,
+      `http://${req.headers.host || 'localhost'}`
+    ).pathname;
 
+  const prefix = '/api/';
+
+  return pathname
+    .slice(prefix.length)
+    .replace(/^\/+/, '')
+    .split('/')[0];
+}
 function readJson(req) {
   return new Promise((resolve, reject) => {
     let body = '';
