@@ -622,7 +622,7 @@ async function carregarAdminDashboard() {
 
           if (node) {
             node.textContent =
-              id === 'sales'
+              id === 'totalVendas'
                 ? formatarMoeda(value)
                 : String(value);
           }
