@@ -1,6 +1,89 @@
 'use strict';
 
-function message(text, isError = false) {
+const API_BASE = '/api';
+
+function api(path, options = {}) {
+
+  const token =
+    localStorage.getItem('igc_token') ||
+    sessionStorage.getItem('igc_token');
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+
+  if (token) {
+    headers.Authorization =
+      `Bearer ${token}`;
+  }
+
+  return fetch(
+    `${API_BASE}${path}`,
+    {
+      ...options,
+      headers
+    }
+  ).then(async response => {
+
+    const text =
+      await response.text();
+
+    let data = {};
+
+    try {
+
+      data = text
+        ? JSON.parse(text)
+        : {};
+
+    } catch {
+
+      data = {
+        message: text
+      };
+
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message ||
+        data.error ||
+        'Erro na comunicação com o servidor.'
+      );
+
+    }
+
+    return data;
+
+  });
+
+}
+
+function el(id) {
+  return document.getElementById(id);
+}
+
+function show(
+  id,
+  visible = true
+) {
+
+  const node = el(id);
+
+  if (!node) {
+    return;
+  }
+
+  node.style.display =
+    visible ? '' : 'none';
+}
+
+function message(
+  text,
+  isError = false
+) {
 
   const nodes = [
     el('messageRegister'),
@@ -30,8 +113,19 @@ function message(text, isError = false) {
   });
 
 }
-  localStorage.removeItem('igc_token');
-  sessionStorage.removeItem('igc_token');
+
+function salvarToken(
+  token,
+  lembrar = true
+) {
+
+  localStorage.removeItem(
+    'igc_token'
+  );
+
+  sessionStorage.removeItem(
+    'igc_token'
+  );
 
   if (!token) {
     return;
@@ -46,12 +140,15 @@ function message(text, isError = false) {
     'igc_token',
     token
   );
+
 }
+
 function salvarSessao(
   novoToken,
   novoRole = 'user',
   lembrar = true
 ) {
+
   salvarToken(
     novoToken,
     lembrar
@@ -59,6 +156,37 @@ function salvarSessao(
 
   const storage =
     lembrar
+      ? localStorage
+      : sessionStorage;
+
+  storage.setItem(
+    'igc_role',
+    novoRole || 'user'
+  );
+
+}
+
+function obterToken() {
+
+  return (
+    localStorage.getItem('igc_token') ||
+    sessionStorage.getItem('igc_token') ||
+    ''
+  );
+
+}
+
+function limparToken() {
+
+  localStorage.removeItem(
+    'igc_token'
+  );
+
+  sessionStorage.removeItem(
+    'igc_token'
+  );
+
+}
       ? localStorage
       : sessionStorage;
 
