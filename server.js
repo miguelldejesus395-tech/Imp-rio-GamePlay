@@ -27,7 +27,18 @@ const SESSION_TTL = 1000 * 60 * 60 * 24 * 7;
 const STREAM_AGENT_KEY = String(
   process.env.STREAM_AGENT_KEY || ''
 ).trim();
+const RESEND_API_KEY = String(
+  process.env.RESEND_API_KEY || ''
+).trim();
 
+const RESEND_FROM_EMAIL = String(
+  process.env.RESEND_FROM_EMAIL || ''
+).trim();
+
+const resetTokens = new Map();
+
+const RESET_TOKEN_TTL =
+  1000 * 60 * 30;
 const streamAgents = new Map();
 const streamCommands = new Map();
 let lastStreamAgentId = '';
