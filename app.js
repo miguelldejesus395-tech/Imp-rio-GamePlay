@@ -1,86 +1,35 @@
 'use strict';
 
-const API_BASE = '/api';
-
-function api(path, options = {}) {
-  const token =
-    localStorage.getItem('igc_token') ||
-    sessionStorage.getItem('igc_token');
-
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {})
-  };
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  return fetch(
-    `${API_BASE}${path}`,
-    {
-      ...options,
-      headers
-    }
-  ).then(async response => {
-    const text = await response.text();
-
-    let data = {};
-
-    try {
-      data = text
-        ? JSON.parse(text)
-        : {};
-    } catch {
-      data = {
-        message: text
-      };
-    }
-
-    if (!response.ok) {
-      throw new Error(
-        data.message ||
-        data.error ||
-        'Erro na comunicação com o servidor.'
-      );
-    }
-
-    function message(text, isError = false) {
-  const node =
-    el('message') ||
-    el('messageRegister') ||
-    el('messageLogin');
-
-  if (!node) {
-    return;
-  }
-
-  node.textContent = text || '';
-
-  node.style.color =
-    isError
-      ? '#ff5c7a'
-      : '';
-}
 function message(text, isError = false) {
-  const node =
-    el('message') ||
-    el('messageRegister') ||
-    el('messageLogin');
 
-  if (!node) {
+  const nodes = [
+    el('messageRegister'),
+    el('messageLogin'),
+    el('message')
+  ].filter(Boolean);
+
+  if (!nodes.length) {
     return;
   }
 
-  node.textContent = text || '';
+  nodes.forEach(node => {
 
-  node.style.color =
-    isError
-      ? '#ff5c7a'
-      : '';
+    node.textContent =
+      text || '';
+
+    node.style.color =
+      isError
+        ? '#ff5c7a'
+        : '';
+
+    node.style.display =
+      text
+        ? 'block'
+        : '';
+
+  });
+
 }
-
-function salvarToken(token, lembrar = true) {
   localStorage.removeItem('igc_token');
   sessionStorage.removeItem('igc_token');
 
