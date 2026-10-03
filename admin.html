@@ -2123,32 +2123,42 @@
 
               </div>
 
-              <span class="status ${
-                pacote.active === false
-                  ? 'red'
-                  : 'green'
-              }">
+       <span class="status ${
+  (
+    pacote.active !== undefined
+      ? pacote.active
+      : pacote.ativo
+  ) === false
+    ? 'red'
+    : 'green'
+}">
 
-                ${
-                  pacote.active === false
-                    ? 'Inativo'
-                    : 'Ativo'
-                }
+  ${
+    (
+      pacote.active !== undefined
+        ? pacote.active
+        : pacote.ativo
+    ) === false
+      ? 'Inativo'
+      : 'Ativo'
+  }
 
-              </span>
+</span>       
 
             </div>
 
 
             <div class="package-price">
 
-              ${moeda(
-                pacote.priceCents != null
-                  ? Number(
-                      pacote.priceCents
-                    ) / 100
-                  : pacote.price
-              )}
+             ${moeda(
+  pacote.priceCents != null
+    ? Number(
+        pacote.priceCents
+      ) / 100
+    : pacote.price != null
+      ? pacote.price
+      : pacote.preco
+)} 
 
             </div>
 
@@ -2308,16 +2318,17 @@
 
 
       document.getElementById(
-        'packagePrice'
-      ).value =
-        pacote.priceCents != null
-          ? Number(
-              pacote.priceCents
-            ) / 100
-          : Number(
-              pacote.price || 0
-            );
-
+  'packagePrice'
+).value =
+  pacote.priceCents != null
+    ? Number(
+        pacote.priceCents
+      ) / 100
+    : Number(
+        pacote.price != null
+          ? pacote.price
+          : pacote.preco || 0
+      );
 
       document.getElementById(
         'packageOrder'
@@ -2336,9 +2347,11 @@
 
 
       document.getElementById(
-        'packageActive'
-      ).checked =
-        pacote.active !== false;
+  'packageActive'
+).checked =
+  pacote.active !== undefined
+    ? Boolean(pacote.active)
+    : Boolean(pacote.ativo);
 
 
       document.getElementById(
