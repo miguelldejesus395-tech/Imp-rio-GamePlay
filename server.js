@@ -2634,7 +2634,8 @@ async function handleApi(req, res) {
           totalUsuarios,
           pagamentosPendentes,
           pedidosPagos: vendas.length,
-          totalVendas
+          totalVendas,
+activeServers: streamAgents.size
         }
       });
 
