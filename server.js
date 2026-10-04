@@ -242,6 +242,7 @@ function moneyToCents(value) {
   }
 
   return Math.round(number * 100);
+  }
   async function enviarEmailRecuperacao(email, token) {
   const link =
     `${PUBLIC_URL}/?reset=${encodeURIComponent(token)}`;
