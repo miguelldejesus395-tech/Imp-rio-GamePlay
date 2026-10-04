@@ -280,10 +280,10 @@ function moneyToCents(value) {
   });
 
   return true;
-}
+  }
 /* =========================================================
    SESSÕES
-=========================================================  */
+========================================================= */
 
 async function createSession(usuarioId, tipo) {
   const token = crypto.randomBytes(32).toString('hex');
