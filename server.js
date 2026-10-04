@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
-
+const nodemailer = require('nodemailer');
 const PORT = Number(process.env.PORT || 10000);
 
 const SUPABASE_URL = String(process.env.SUPABASE_URL || '').trim();
@@ -37,6 +37,15 @@ const RESEND_FROM_EMAIL = String(
 
 const resetTokens = new Map();
 
+const smtpTransporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+});
 const RESET_TOKEN_TTL =
   1000 * 60 * 30;
 const streamAgents = new Map();
@@ -233,69 +242,45 @@ function moneyToCents(value) {
   }
 
   return Math.round(number * 100);
-}
-
-function centsToMoney(cents) {
-  return Number(cents || 0) / 100;
-}
-
-function makeOrderNSU() {
-  return `IGP-${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
-}
-async function enviarEmailRecuperacao(email, token) {
-  if (!RESEND_API_KEY) {
-    throw new Error('RESEND_API_KEY não configurada no Render.');
-  }
-
-  if (!RESEND_FROM_EMAIL) {
-    throw new Error('RESEND_FROM_EMAIL não configurado no Render.');
-  }
-
+  async function enviarEmailRecuperacao(email, token) {
   const link =
     `${PUBLIC_URL}/?reset=${encodeURIComponent(token)}`;
 
-  const response = await fetch(
-    'https://api.resend.com/emails',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        from: RESEND_FROM_EMAIL,
-        to: [email],
-        subject: 'Recuperação de senha - Império GamePlay',
-        html: `
-          <div style="font-family:Arial,sans-serif">
-            <h2>👑 Império GamePlay</h2>
-            <p>Recebemos uma solicitação para redefinir sua senha.</p>
+  await smtpTransporter.sendMail({
+    from:
+      process.env.SMTP_FROM ||
+      process.env.SMTP_USER,
+    to: email,
+    subject:
+      'Recuperação de senha - Império GamePlay',
+    html: `
+      <div style="font-family:Arial,sans-serif">
+        <h2>👑 Império GamePlay</h2>
 
-            <p>
-              <a href="${link}">
-                Redefinir minha senha
-              </a>
-            </p>
+        <p>
+          Recebemos uma solicitação para redefinir sua senha.
+        </p>
 
-            <p>Este link expira em 30 minutos.</p>
-            <p>Se você não solicitou isso, ignore este e-mail.</p>
-          </div>
-        `
-      })
-    }
-  );
+        <p>
+          <a href="${link}">
+            Redefinir minha senha
+          </a>
+        </p>
 
-  if (!response.ok) {
-    const errorText = await response.text();
+        <p>
+          Este link expira em 30 minutos.
+        </p>
 
-    throw new Error(
-      `Resend recusou o envio: ${errorText}`
-    );
-  }
+        <p>
+          Se você não solicitou isso, ignore este e-mail.
+        </p>
+      </div>
+    `
+  });
 
   return true;
 }
-/* =========================================================
+* =========================================================
    SESSÕES
 ========================================================= */
 
